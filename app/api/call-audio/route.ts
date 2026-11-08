@@ -2,35 +2,35 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 import db from "@/lib/db";
-import { synthesizeSpeech } from "@/lib/gnani";
 import { ALL_VOICES } from "@/lib/voice-catalog";
-import { renderScript, DEFAULT_VIRTUAL_SCRIPTS } from "@/lib/virtual-script";
+import { DEFAULT_VIRTUAL_SCRIPTS } from "@/lib/virtual-script";
 import { syncRealtimeDb } from "@/lib/firebase";
-import { extractFullCallSpeechText } from "@/lib/sector-campaigns";
+import { extractFullCallSpeechText, cleanCustomerName } from "@/lib/sector-campaigns";
+import { synthesizeDialogueAudio } from "@/lib/dialogue-synthesizer";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { prospectId, text: overrideText, voice: overrideVoice } = body;
+    const { prospectId, text: overrideText, voice: overrideVoice, customerName: overrideCustomerName } = body;
 
-    // 1. Get user's selected voice from settings
     const savedVoice = (db.prepare("SELECT value FROM settings WHERE key = 'voice'").get() as any)?.value || "Shivani";
     const chosenVoice = overrideVoice || savedVoice;
     const voiceDef = ALL_VOICES.find(v => v.id.toLowerCase() === chosenVoice.toLowerCase()) || ALL_VOICES[0];
 
-    // 2. Look up prospect if prospectId provided
     let prospect: any = null;
     if (prospectId) {
       prospect = db.prepare("SELECT * FROM cold_call_campaigns WHERE id = ?").get(prospectId);
+      if (!prospect) {
+        prospect = db.prepare("SELECT * FROM calls WHERE id = ?").get(prospectId);
+      }
     }
 
-    // Check if prospect already has a valid synthesized audio file on disk (and NOT an old demo_call file)
+    // Check if valid synthesized dialogue file already exists (> 100KB)
     if (prospect && prospect.audio_url && !prospect.audio_url.includes("demo_call") && !prospect.audio_url.includes("sample_recap")) {
-      const fullPath = path.join(process.cwd(), "public", prospect.audio_url);
+      const fullPath = path.join(process.cwd(), "public", prospect.audio_url.replace(/^\//, ""));
       if (fs.existsSync(fullPath)) {
         const stat = fs.statSync(fullPath);
-        // If file is complete (> 450KB ~ 9.5s) or transcript is brief, return cached
-        if (stat.size > 450000 || !prospect.transcript || prospect.transcript.length < 160) {
+        if (stat.size > 100000) {
           return NextResponse.json({
             success: true,
             audioUrl: prospect.audio_url,
@@ -41,54 +41,51 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 3. Determine the complete speech text to synthesize
-    let speechText = overrideText || "";
     const company = (db.prepare("SELECT value FROM settings WHERE key = 'business_name'").get() as any)?.value || "Ishiva digital";
+    const savedTimbreLang = (db.prepare("SELECT value FROM settings WHERE key = 'timbre_language'").get() as any)?.value;
+    const synthLang = savedTimbreLang || voiceDef.language || "te-IN";
 
+    let speechText = overrideText || "";
     if (!speechText && prospect) {
       const rawActiveScript = (db.prepare("SELECT value FROM settings WHERE key = 'active_script'").get() as any)?.value;
       let activeScript = DEFAULT_VIRTUAL_SCRIPTS.telugu_high_english;
       if (rawActiveScript) {
         try { activeScript = JSON.parse(rawActiveScript); } catch {}
       }
-
       speechText = extractFullCallSpeechText(prospect, voiceDef.name, company, activeScript);
     }
 
     if (!speechText) {
-      speechText = `Hello, ${voiceDef.name} calling from ${company}.`;
+      speechText = `నమస్కారం అండి, నేను ${company} నుండి మాట్లాడుతున్నాను.`;
     }
 
-    // Clean any unwanted outer quotes and duplicate parentheses
-    speechText = speechText.replace(/^["']|["']$/g, "").replace(/\s*\([^)]*\)/g, "").trim();
+    const customerName = overrideCustomerName || (prospect ? cleanCustomerName(prospect.name || "Customer") : "Customer");
 
-    // 4. Synthesize with the user's SELECTED VOICE & language
-    const savedTimbreLang = (db.prepare("SELECT value FROM settings WHERE key = 'timbre_language'").get() as any)?.value;
-    const synthLang = savedTimbreLang || voiceDef.language || "te-IN";
-
-    const result = await synthesizeSpeech(speechText, {
-      voice: voiceDef.id,
-      model: voiceDef.model,
-      language: synthLang,
+    // Synthesize two-party dialogue: Agent Voice + Customer Voice
+    const result = await synthesizeDialogueAudio({
+      transcript: speechText,
+      customerName,
+      agentVoiceId: voiceDef.id,
+      companyName: company,
+      languageCode: synthLang,
+      prospectId: prospectId || prospect?.id,
     });
 
-    // 5. Update prospect in SQLite and Firebase if prospectId was provided
     if (prospectId) {
-      db.prepare(`
-        UPDATE cold_call_campaigns
-        SET audio_url = ?
-        WHERE id = ?
-      `).run(result.audioUrl, prospectId);
-
-      const all = db.prepare("SELECT * FROM cold_call_campaigns").all();
-      syncRealtimeDb("campaign/prospects", all);
+      try {
+        db.prepare("UPDATE cold_call_campaigns SET audio_url = ? WHERE id = ?").run(result.audioUrl, prospectId);
+        db.prepare("UPDATE calls SET audio_url = ? WHERE id = ?").run(result.audioUrl, prospectId);
+        const all = db.prepare("SELECT * FROM cold_call_campaigns").all();
+        syncRealtimeDb("campaign/prospects", all);
+      } catch {}
     }
 
     return NextResponse.json({
       success: true,
       audioUrl: result.audioUrl,
-      voice: voiceDef.id,
-      text: speechText,
+      agentVoice: result.agentVoice,
+      customerVoice: result.customerVoice,
+      turnsCount: result.turnsCount,
       cached: result.cached,
     });
   } catch (err: any) {
@@ -117,50 +114,48 @@ export async function GET(req: NextRequest) {
       prospect = db.prepare("SELECT * FROM calls WHERE id = ?").get(prospectId);
     }
 
-    // 1. If audio file already exists on disk, stream it immediately
-    if (prospect && prospect.audio_url) {
+    // 1. If audio file already exists on disk and is a multi-turn dialogue file (> 100KB), stream it immediately
+    if (prospect && prospect.audio_url && !prospect.audio_url.includes("demo_call") && !prospect.audio_url.includes("sample_recap")) {
       const fullPath = path.join(process.cwd(), "public", prospect.audio_url.replace(/^\//, ""));
       if (fs.existsSync(fullPath)) {
-        const buffer = fs.readFileSync(fullPath);
-        return new NextResponse(buffer, {
-          headers: {
-            "Content-Type": "audio/wav",
-            "Content-Length": buffer.length.toString(),
-            "Accept-Ranges": "bytes",
-            "Cache-Control": "public, max-age=86400",
-          },
-        });
+        const stat = fs.statSync(fullPath);
+        if (stat.size > 100000) {
+          const buffer = fs.readFileSync(fullPath);
+          return new NextResponse(buffer, {
+            headers: {
+              "Content-Type": "audio/wav",
+              "Content-Length": buffer.length.toString(),
+              "Accept-Ranges": "bytes",
+              "Cache-Control": "public, max-age=86400",
+            },
+          });
+        }
       }
     }
 
-    // 2. Synthesize on-the-fly
+    // 2. Synthesize on-the-fly two-party dialogue
     const rawActiveScript = (db.prepare("SELECT value FROM settings WHERE key = 'active_script'").get() as any)?.value;
     let activeScript = DEFAULT_VIRTUAL_SCRIPTS.telugu_high_english;
     if (rawActiveScript) {
       try { activeScript = JSON.parse(rawActiveScript); } catch {}
     }
 
-    let speechText = prospect
+    const customerName = prospect ? cleanCustomerName(prospect.name || "Customer") : "Customer";
+    const speechText = prospect
       ? extractFullCallSpeechText(prospect, voiceDef.name, company, activeScript)
-      : `Hello, ${voiceDef.name} calling from ${company}.`;
-
-    speechText = speechText.replace(/^["']|["']$/g, "").replace(/\s*\([^)]*\)/g, "").trim();
+      : `నమస్కారం, నేను ${company} నుండి ${voiceDef.name} మాట్లాడుతున్నాను.`;
 
     const savedTimbreLang = (db.prepare("SELECT value FROM settings WHERE key = 'timbre_language'").get() as any)?.value;
     const synthLang = savedTimbreLang || voiceDef.language || "te-IN";
 
-    const result = await synthesizeSpeech(speechText, {
-      voice: voiceDef.id,
-      model: voiceDef.model,
-      language: synthLang,
+    const result = await synthesizeDialogueAudio({
+      transcript: speechText,
+      customerName,
+      agentVoiceId: voiceDef.id,
+      companyName: company,
+      languageCode: synthLang,
+      prospectId: prospect?.id || prospectId,
     });
-
-    if (prospectId) {
-      try {
-        db.prepare("UPDATE cold_call_campaigns SET audio_url = ? WHERE id = ?").run(result.audioUrl, prospectId);
-        db.prepare("UPDATE calls SET audio_url = ? WHERE id = ?").run(result.audioUrl, prospectId);
-      } catch {}
-    }
 
     const genPath = path.join(process.cwd(), "public", result.audioUrl.replace(/^\//, ""));
     if (fs.existsSync(genPath)) {
@@ -181,5 +176,3 @@ export async function GET(req: NextRequest) {
     return new NextResponse(`Error: ${err.message}`, { status: 500 });
   }
 }
-
-

@@ -403,7 +403,7 @@ export default function CallsPage() {
                     <span className="text-[11px] uppercase tracking-wider text-muted font-medium block">
                       Prisma Transcript (Key Moment Highlighted)
                     </span>
-                    <p className="telugu-text text-sm text-ink leading-[1.8] bg-paper/60 p-4 rounded-md border border-border/60">
+                    <p className="telugu-text text-sm text-ink leading-[1.8] bg-paper/60 p-4 rounded-md border border-border/60 whitespace-pre-line">
                       {call.transcript
                         ? renderHighlightedTranscript(call.transcript, call.key_quote)
                         : "Transcript pending..."}

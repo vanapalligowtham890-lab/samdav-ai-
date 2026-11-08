@@ -417,7 +417,7 @@ export default function LeadDetailPage({
             <span className="text-[11px] uppercase tracking-wider text-muted font-medium block">
               Gnani Prisma Full Transcript
             </span>
-            <div className="max-h-80 overflow-y-auto bg-paper p-3 rounded-md border border-border text-xs text-ink telugu-text leading-[1.8]">
+            <div className="max-h-80 overflow-y-auto bg-paper p-3 rounded-md border border-border text-xs text-ink telugu-text leading-[1.8] whitespace-pre-line">
               {lead.transcript || "No transcript available for this call."}
             </div>
           </div>

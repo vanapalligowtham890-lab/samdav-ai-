@@ -3,6 +3,7 @@ import db from "./db";
 import { ColdCallProspect, CampaignMetrics, calculateCampaignMetrics } from "./campaign";
 import { syncRealtimeDb } from "./firebase";
 import { synthesizeSpeech } from "./gnani";
+import { synthesizeDialogueAudio } from "./dialogue-synthesizer";
 import { generateCampaignWithGemini } from "./llm-campaign";
 import { ALL_VOICES } from "./voice-catalog";
 import { getLanguageMode } from "./languages";
@@ -49,63 +50,12 @@ export function extractFullCallSpeechText(
     return `నమస్కారం ${cleanCustomerName(prospect.name || "")} గారు, నేను ${company} నుండి ${voice} మాట్లాడుతున్నాను. మీ ఎంక్వైరీ వివరాలు వాట్సాప్ పంపించాము. ధన్యవాదాలు.`;
   }
 
-  const raw = prospect.transcript;
-  const lines = raw.split("\n").map(l => l.trim()).filter(Boolean);
-
-  // If already a single continuous paragraph, clean speaker prefixes and return
-  if (lines.length <= 1) {
-    return raw
-      .replace(/^[a-zA-Z0-9_ ()·\u0C00-\u0C7F\u0900-\u097F\u0B80-\u0BFF\u0C80-\u0CFF\u0980-\u09FF\u0A80-\u0AFF]+:\s*/, "")
-      .replace(/^["']|["']$/g, "")
-      .replace(/[\u0A80-\u0AFF]/g, "") // strip stray Gujarati letters from Gemini hallucination
-      .replace(/\s*\([^)]*\)/g, "")
-      .trim();
-  }
-
-  // 2. Multi-turn dialogue: extract ALL agent lines so the complete pitch is synthesized
-  const customerName = cleanCustomerName(prospect.name || "").toLowerCase();
-  const voiceLower = voice.toLowerCase();
-  const customerTokens = customerName.split(/\s+/).filter(t => t.length >= 3);
-
-  const agentLines: string[] = [];
-  for (const line of lines) {
-    const lower = line.toLowerCase();
-    const isCustomerLine = (
-      lower.startsWith("prospect") ||
-      lower.startsWith("customer") ||
-      lower.startsWith("client") ||
-      lower.startsWith("lead") ||
-      customerTokens.some(tok => lower.startsWith(tok))
-    );
-
-    const isAgentLine = (
-      lower.startsWith("agent") ||
-      lower.startsWith("caller") ||
-      lower.startsWith("representative") ||
-      lower.startsWith("executive") ||
-      lower.startsWith(voiceLower) ||
-      !isCustomerLine
-    );
-
-    if (isAgentLine && !isCustomerLine) {
-      const clean = line
-        .replace(/^[a-zA-Z0-9_ ()·\u0C00-\u0C7F\u0900-\u097F\u0B80-\u0BFF\u0C80-\u0CFF\u0980-\u09FF\u0A80-\u0AFF]+:\s*/, "")
-        .replace(/^["']|["']$/g, "")
-        .replace(/[\u0A80-\u0AFF]/g, "") // strip rogue stray unicode
-        .replace(/\s*\([^)]*\)/g, "")
-        .trim();
-      if (clean) agentLines.push(clean);
-    }
-  }
-
-  if (agentLines.length > 0) {
-    return agentLines.join(" ");
-  }
-
-  // Fallback: strip speaker labels and join all dialogue lines
-  return lines
-    .map(l => l.replace(/^[a-zA-Z0-9_ ()·]+:\s*/, "").replace(/^["']|["']$/g, "").trim())
-    .join(" ");
+  // Return the full clean transcript with both agent and customer lines intact
+  return prospect.transcript
+    .replace(/^["']|["']$/g, "")
+    .replace(/[\u0A80-\u0AFF]/g, "") // strip rogue stray unicode
+    .replace(/\s*\([^)]*\)/g, "")
+    .trim();
 }
 
 export interface SectorDefinition {
@@ -614,10 +564,12 @@ export async function seedSectorCampaign(
     if ((p.call_status === "closed" || p.call_status === "ongoing") && !p.audio_url) {
       try {
         const textToSpeak = extractFullCallSpeechText(p, voiceDef.name, companyName, activeScript);
-        const synthRes = await synthesizeSpeech(textToSpeak, {
-          voice: voiceDef.id,
-          model: voiceDef.model,
-          language: timbreLanguage,
+        const synthRes = await synthesizeDialogueAudio({
+          transcript: textToSpeak,
+          customerName: p.name,
+          agentVoiceId: voiceDef.id,
+          companyName: companyName,
+          languageCode: timbreLanguage,
         });
         p.audio_url = synthRes.audioUrl;
       } catch (synthErr) {

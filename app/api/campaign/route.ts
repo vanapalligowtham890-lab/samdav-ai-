@@ -10,6 +10,7 @@ import {
   ColdCallProspect 
 } from "@/lib/campaign";
 import { synthesizeSpeech } from "@/lib/gnani";
+import { synthesizeDialogueAudio } from "@/lib/dialogue-synthesizer";
 import { ALL_VOICES } from "@/lib/voice-catalog";
 import { renderScript, DEFAULT_VIRTUAL_SCRIPTS } from "@/lib/virtual-script";
 import { syncRealtimeDb } from "@/lib/firebase";
@@ -234,24 +235,20 @@ export async function POST(req: NextRequest) {
       const fullTranscript = `Agent (${voice} · ${voiceDef.languageLabel}): "${agentOpening}"\nProspect (${cleanTargetName}): "${customerReply}"`;
       const keyQuote = customerReply;
 
-      // Synthesize unique full call audio with the user's SELECTED VOICE & Timbre language
+      // Synthesize authentic two-party dialogue (Agent Voice + Customer Voice stitched)
       let audioUrl = "";
       try {
-        const speechText = renderScript(`${script.greeting} ${script.pitch} ${script.question}`, {
-          name: cleanTargetName,
-          company,
-          need: target.need,
-        }).replace(/\s*\([^)]*\)/g, "");
-
-        const ttsResult = await synthesizeSpeech(speechText, {
-          voice,
-          model,
-          language,
-          speed: 1.0,
+        const dialogueRes = await synthesizeDialogueAudio({
+          transcript: fullTranscript,
+          customerName: cleanTargetName,
+          agentVoiceId: voice,
+          companyName: company,
+          languageCode: language,
+          prospectId: target.id,
         });
-        audioUrl = ttsResult.audioUrl;
+        audioUrl = dialogueRes.audioUrl;
       } catch (synthErr) {
-        console.warn("TTS synthesis error during dial:", synthErr);
+        console.warn("TTS dialogue synthesis error during dial:", synthErr);
         audioUrl = "";
       }
 
