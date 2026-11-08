@@ -43,6 +43,7 @@ vaani.db
 
 # dynamic generated audio
 public/audio/recap_*.wav
+public/audio/demo_*.wav
 
 # temporary scratch
 scratch/

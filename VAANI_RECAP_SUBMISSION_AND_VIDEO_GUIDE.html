@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Vaani Recap — Complete Submission, Pitch & Video Demo Guide</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 1.6cm 1.4cm;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #1a1a1a;
+      background: #ffffff;
+      line-height: 1.55;
+      font-size: 13px;
+      margin: 0;
+      padding: 0;
+    }
+    .header {
+      border-bottom: 2px solid #b85d38;
+      padding-bottom: 14px;
+      margin-bottom: 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .header h1 {
+      font-size: 24px;
+      color: #b85d38;
+      margin: 0 0 4px 0;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .header .subtitle {
+      font-size: 13px;
+      color: #555;
+      margin: 0;
+    }
+    .badge-bar {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: #fdf5f0;
+      color: #b85d38;
+      border: 1px solid #f0cfbe;
+    }
+    .badge.secondary {
+      background: #f0f7f4;
+      color: #2b7a5a;
+      border-color: #cce6db;
+    }
+    h2 {
+      font-size: 16px;
+      color: #1f2937;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 5px;
+      margin-top: 24px;
+      margin-bottom: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    h3 {
+      font-size: 14px;
+      color: #b85d38;
+      margin-top: 14px;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    p {
+      margin: 0 0 10px 0;
+      color: #374151;
+    }
+    .card {
+      background: #fafaf9;
+      border: 1px solid #e7e5e4;
+      border-radius: 6px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+    }
+    .card-title {
+      font-weight: 600;
+      color: #1c1917;
+      margin-bottom: 6px;
+      font-size: 13px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 16px 0;
+      font-size: 12px;
+    }
+    th, td {
+      border: 1px solid #e5e7eb;
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #f9fafb;
+      font-weight: 600;
+      color: #374151;
+    }
+    tr:nth-child(even) td {
+      background: #fafaf9;
+    }
+    .timeline-time {
+      font-weight: 700;
+      color: #b85d38;
+      white-space: nowrap;
+      width: 90px;
+    }
+    .timeline-screen {
+      font-weight: 600;
+      color: #1f2937;
+      width: 130px;
+    }
+    .script-box {
+      background: #fff;
+      border-left: 3px solid #b85d38;
+      padding: 8px 12px;
+      margin: 6px 0;
+      font-style: italic;
+      color: #1f2937;
+      border-radius: 0 4px 4px 0;
+    }
+    .action-badge {
+      display: inline-block;
+      font-size: 10px;
+      background: #e5e7eb;
+      color: #374151;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .highlight-quote {
+      background: #fef3c7;
+      padding: 1px 4px;
+      border-radius: 3px;
+      font-weight: 500;
+    }
+    .code-span {
+      font-family: Consolas, Monaco, monospace;
+      font-size: 11px;
+      background: #f3f4f6;
+      padding: 2px 5px;
+      border-radius: 3px;
+      border: 1px solid #e5e7eb;
+      color: #111827;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .page-break {
+      page-break-before: always;
+    }
+    .footer {
+      margin-top: 30px;
+      border-top: 1px solid #e5e7eb;
+      padding-top: 8px;
+      font-size: 11px;
+      color: #9ca3af;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PAGE 1: TITLE & 1-PAGE SOLUTION PITCH -->
+  <div class="header">
+    <div>
+      <h1>Vaani Recap</h1>
+      <p class="subtitle">Autonomous Multilingual AI Cold-Calling &amp; Lead Briefing Agent for Indian SMBs</p>
+      <div class="badge-bar">
+        <span class="badge">Gnani Timbre v3.0 (TTS)</span>
+        <span class="badge">Gnani Prisma v3.0 (STT)</span>
+        <span class="badge secondary">10 Indian Languages</span>
+        <span class="badge secondary">16+ Voices</span>
+      </div>
+    </div>
+    <div style="text-align: right; font-size: 11px; color: #6b7280;">
+      <strong>Gnani AI Challenge</strong><br>
+      Submission Dossier
+    </div>
+  </div>
+
+  <div class="card" style="border-left: 4px solid #b85d38; background: #fffcf9;">
+    <div class="card-title" style="font-size: 14px; color: #b85d38;">Official Submission Answers (Form Questions)</div>
+    <p style="margin: 4px 0 2px 0;"><strong>Question 5 (Project URL &amp; 1-Page Pitch):</strong></p>
+    <p><span class="code-span">https://github.com/vanapalligowtham890-lab/vaani-recap.git</span> (includes 1-page pitch in <span class="code-span">SOLUTION_PITCH.md</span>)</p>
+    <p style="margin: 6px 0 2px 0;"><strong>Question 6 (Link to Video Demo):</strong></p>
+    <p>Paste your 2-3 minute Google Drive (set to <em>"Anyone with link can view"</em>) or YouTube Unlisted link.</p>
+    <p style="margin: 6px 0 2px 0;"><strong>Question 7 (Bonus LinkedIn Category):</strong></p>
+    <p>Post the template provided in Section 4 below tagging <strong>@Gnani.ai</strong> on LinkedIn.</p>
+  </div>
+
+  <h2>1. Executive Summary &amp; The Problem</h2>
+  <p>Over <strong>63 million Indian micro, small, and medium enterprises (SMBs)</strong> — ranging from local dental clinics and boutique coaching institutes to real estate brokers, auto dealerships, and digital agencies — struggle with lead outreach. Hiring and training telecalling teams is prohibitively expensive, manual dialing is slow, language barriers across regional dialects hinder conversions, and valuable lead context is permanently lost once a phone call concludes.</p>
+
+  <h2>2. The Solution: Vaani Recap</h2>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">1. Autonomous Outbound Dialing with Caller ID</div>
+      <p style="font-size: 12px; margin: 0;">Owners upload prospect lists via Excel/CSV. The AI agent initiates outbound calls through the owner's <strong>verified forwarding caller ID</strong>, ensuring trust and direct callbacks. Conversations are spoken naturally across <strong>10 Indian language modes</strong> using <strong>Gnani Timbre v3.0</strong>.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">2. Real-Time STT &amp; Lead Extraction</div>
+      <p style="font-size: 12px; margin: 0;">Calls are transcribed verbatim using <strong>Gnani Prisma v3.0</strong> (handling Indian code-mixed accents). Transcripts are parsed into structured lead cards: Intent, Need, Budget, Objections, Follow-up Date, and verbatim Key Quote.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">3. Spoken Evening Brief (&lt; 60 Words)</div>
+      <p style="font-size: 12px; margin: 0;">Owners don't read dense spreadsheets after a long day. At close of business, the agent synthesizes a concise, audio-spoken evening recap in the owner's preferred regional voice persona, detailing won deals and urgent callbacks.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">4. Zero-Redundancy Credit Caching</div>
+      <p style="font-size: 12px; margin: 0;">Every synthesized audio chunk and transcript is SHA-256 hashed and cached in local SQLite, ensuring zero duplicate API billing while syncing live state to Firebase Realtime Database.</p>
+    </div>
+  </div>
+
+  <!-- PAGE 2: VIDEO DEMO SCRIPT & TIMELINE -->
+  <div class="page-break"></div>
+
+  <div class="header">
+    <div>
+      <h1 style="font-size: 20px;">2.5-Minute Video Demo Script &amp; Timeline</h1>
+      <p class="subtitle">Exact word-by-word guide with screen actions for your submission recording</p>
+    </div>
+    <div style="font-size: 11px; color: #6b7280;">Target: 2 min 30 sec</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>Screen &amp; Action</th>
+        <th>Spoken Script (Read Aloud or Use AI Voice)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="timeline-time">0:00 - 0:30</td>
+        <td class="timeline-screen">
+          <span class="action-badge">LANDING PAGE (/)</span><br>
+          Start on homepage. Scroll down to show features, voice audition chips, and stack attribution.
+        </td>
+        <td>
+          <div class="script-box">
+            "Hello judges! My name is Gowtham, and this is <strong>Vaani Recap</strong> — an autonomous, multilingual AI sales and lead briefing agent built for over 63 million Indian small businesses for the Gnani AI Great Indian AI Internship Challenge.<br><br>
+            Local business owners like clinic operators, coaching institutes, and real estate consultants cannot afford dedicated telecallers, and they lose hot leads right after calls end. Vaani Recap automates outbound calling, real-time lead extraction, and delivers a spoken evening brief under 60 words."
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="timeline-time">0:30 - 1:15</td>
+        <td class="timeline-screen">
+          <span class="action-badge">DASHBOARD (/today)</span><br>
+          Click Dashboard. Point to Verified Forwarding Number (+91 98765 43210), 6 KPI cards, and click <strong>'Dial Next Prospect'</strong>.
+        </td>
+        <td>
+          <div class="script-box">
+            "Here is the live Dashboard. Notice at the top, outbound calls are tied to the business owner's <strong>verified forwarding phone number</strong>, so prospects always see a trusted local caller ID.<br><br>
+            Owners can upload prospect lists directly via Excel or CSV. The dashboard tracks six live metrics: <strong>Calls Ongoing, Answered, Closed, Rejected, Leads Won, and Leads Lost</strong>.<br><br>
+            When I click <strong>'Dial Next Prospect'</strong>, the AI agent autonomously initiates the cold call using our tailored sector script and speaks directly with the customer."
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="timeline-time">1:15 - 1:50</td>
+        <td class="timeline-screen">
+          <span class="action-badge">RECORDINGS &amp; TRANSCRIPTS (/calls)</span><br>
+          Click <strong>Play</strong> on a call (e.g., Priya Sharma or Rahul Varma). Let audio play for 8-10 seconds. Point to highlighted key quote.
+        </td>
+        <td>
+          <div class="script-box">
+            "Let's listen to the generated call. Every conversation is synthesized using <strong>Gnani Timbre v3.0</strong>.<br><br>
+            <em>[Play 8 seconds of call audio]</em><br><br>
+            Notice that unlike basic demos that cut off after 5 seconds, Vaani Recap synthesizes the complete, natural conversation — greeting, pitch, customer objection, and closing — without robotic repetition.<br><br>
+            Simultaneously, <strong>Gnani Prisma v3.0 STT</strong> transcribes the call with high phonetic accuracy, highlighting the customer's exact intent and budget."
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="timeline-time">1:50 - 2:15</td>
+        <td class="timeline-screen">
+          <span class="action-badge">SPOKEN RECAP &amp; LEAD CARD</span><br>
+          On Dashboard, click <strong>Play</strong> on Today's Spoken Evening Recap (<60 words). Then click <strong>'View lead card'</strong>.
+        </td>
+        <td>
+          <div class="script-box">
+            "At the end of a busy day, small business owners don't want to read raw spreadsheets. Vaani Recap generates an <strong>Evening Spoken Brief under 60 words</strong> using Gnani Timbre, highlighting today's won leads and critical callbacks.<br><br>
+            <em>[Play 4 seconds of recap audio]</em><br><br>
+            Clicking on any prospect opens their structured Lead Card: automatically extracting customer need, budget, exact objection quotes, and a pre-drafted WhatsApp follow-up message ready to send with one click."
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="timeline-time">2:15 - 2:45</td>
+        <td class="timeline-screen">
+          <span class="action-badge">SETTINGS (/settings)</span><br>
+          Show 10 Indian Language Modes, voice library (Shivani, Riyaa, Devansh, Varuni), and return to Dashboard for conclusion.
+        </td>
+        <td>
+          <div class="script-box">
+            "In Settings, Vaani Recap supports true regional commerce across <strong>10 Indian language modes</strong> — from Pure Telugu and High-English Telugu to Hinglish, Pure Hindi, Tamil, Marathi, Bengali, and Indian Corporate English.<br><br>
+            We provide over 16 verified <strong>Gnani Timbre voices</strong> matching local regional dialects. All audio hashes are cached in SQLite to guarantee zero redundant API billing.<br><br>
+            Vaani Recap brings enterprise-grade voice AI to India's small businesses by combining Gnani Prisma STT and Gnani Timbre TTS with intelligent lead workflows. Thank you for your time!"
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- PAGE 3: AI VOICE GUIDE & LINKEDIN TEMPLATE -->
+  <div class="page-break"></div>
+
+  <div class="header">
+    <div>
+      <h1 style="font-size: 20px;">AI Voice Narration Guide &amp; Bonus LinkedIn Post</h1>
+      <p class="subtitle">Tools, step-by-step instructions, and ready-to-copy submission copy</p>
+    </div>
+    <div style="font-size: 11px; color: #6b7280;">Bonus Category</div>
+  </div>
+
+  <h2>3. Can You Use an AI Voice for the Video Demo?</h2>
+  <p><strong>YES, absolutely!</strong> Using a high-quality AI voiceover is standard practice and well-received in technical hackathons, especially for voice technology challenges. Here are the 3 easiest ways to record with an AI voice:</p>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Method 1: Windows Clipchamp (Built-in &amp; 100% Free)</div>
+      <p style="font-size: 12px;">1. Open the <strong>Clipchamp</strong> app from your Windows Start menu.<br>
+      2. Click <strong>"Record &amp; Create"</strong> &rarr; <strong>"Screen"</strong>, and record your browser at <span class="code-span">localhost:3000</span> while clicking through the pages.<br>
+      3. Click <strong>"Record &amp; Create"</strong> &rarr; <strong>"Text to speech"</strong>.<br>
+      4. Paste each section's script from the table above, select voice (e.g., <em>English (India) - Neerja or Prabhat</em>), and drag the audio track onto your timeline!<br>
+      5. Export as 1080p MP4.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Method 2: ElevenLabs / CapCut (Studio Quality)</div>
+      <p style="font-size: 12px;">1. Go to <span class="code-span">elevenlabs.io</span> or open <strong>CapCut Desktop</strong>.<br>
+      2. Paste the spoken script into Text-to-Speech using an energetic Indian/Global English voice.<br>
+      3. Download the MP3 audio file.<br>
+      4. Screen-record your app actions using Windows Game Bar (<span class="code-span">Win + Alt + R</span>).<br>
+      5. Lay the voiceover track over your video in any free editor (CapCut, Canva, Clipchamp).</p>
+    </div>
+  </div>
+
+  <h2>4. Ready-to-Copy LinkedIn Post (Bonus Category: Question 7)</h2>
+  <div class="card" style="background: #fdfaf8; border-left: 4px solid #b85d38;">
+    <p style="font-size: 12px; line-height: 1.6; color: #1c1917; margin: 0;">
+      🚀 Excited to present <strong>Vaani Recap</strong> for the <strong>@Gnani.ai Great Indian AI Internship Challenge</strong>!
+      <br><br>
+      Over 63 million Indian SMBs struggle with sales outreach and customer conversions. Human telecallers are expensive, manual follow-ups are inconsistent, and critical customer objections get buried inside raw phone recordings.
+      <br><br>
+      We built <strong>Vaani Recap</strong> — an autonomous multilingual AI cold-calling &amp; lead briefing engine designed specifically for Indian small businesses:
+      <br><br>
+      🔹 <strong>Autonomous Outbound Dialing:</strong> Initiates prospect calls routed through the owner's verified forwarding caller ID.<br>
+      🔹 <strong>10 Indian Language Modes:</strong> Powered by <strong>Gnani Timbre v3.0</strong> (16+ regional voice personas across Telugu, Hindi, Hinglish, Marathi, Tamil, Kannada, Bengali, and Indian English) with zero awkward pauses.<br>
+      🔹 <strong>Real-Time Extraction:</strong> Transcribes live conversations using <strong>Gnani Prisma v3.0</strong>, extracting customer intent, budget, and exact objection quotes.<br>
+      🔹 <strong>Spoken Evening Brief (&lt; 60 words):</strong> Delivers an audio briefing to the business owner summarizing today's won leads and urgent callbacks.<br>
+      🔹 <strong>Zero-Redundancy Credit Caching:</strong> Local SQLite hash caching prevents duplicate API billing.
+      <br><br>
+      Huge thanks to the <strong>@Gnani.ai</strong> team for building state-of-the-art voice infrastructure for India!
+      <br><br>
+      💻 GitHub Repo: https://github.com/vanapalligowtham890-lab/vaani-recap.git<br>
+      🎥 Video Demo: [Insert your Drive/YouTube link here]
+      <br><br>
+      #GnaniAI #VoiceAI #GenerativeAI #IndicAI #BuildForIndia #GreatIndianAIChallenge #AIInternship
+    </p>
+  </div>
+
+  <div class="footer">
+    Vaani Recap &bull; Built with Gnani Prisma v3.0 (STT) and Gnani Timbre v3.0 (TTS) &bull; Submitted by Gowtham Vanapalli
+  </div>
+
+</body>
+</html>
