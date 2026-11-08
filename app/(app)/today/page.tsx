@@ -126,20 +126,32 @@ export default function TodayDashboardPage() {
   }, []);
 
   const togglePlayRecap = () => {
-    if (!audioRecapRef.current && recap?.audio_url) {
-      audioRecapRef.current = new Audio(recap.audio_url);
-      audioRecapRef.current.onended = () => setIsPlayingRecap(false);
+    if (isPlayingRecap && audioRecapRef.current) {
+      audioRecapRef.current.pause();
+      setIsPlayingRecap(false);
+      return;
+    }
+
+    if (!recap?.audio_url) {
+      handleGenerateRecap();
+      return;
     }
 
     if (audioRecapRef.current) {
-      if (isPlayingRecap) {
-        audioRecapRef.current.pause();
-        setIsPlayingRecap(false);
-      } else {
-        audioRecapRef.current.play().catch((err) => console.warn(err));
-        setIsPlayingRecap(true);
-      }
+      audioRecapRef.current.pause();
     }
+
+    const audio = new Audio(recap.audio_url);
+    audioRecapRef.current = audio;
+    audio.onended = () => setIsPlayingRecap(false);
+    audio.onerror = async () => {
+      console.warn("Recap audio load failed, re-generating...");
+      await handleGenerateRecap();
+    };
+    audio.play().then(() => setIsPlayingRecap(true)).catch((err) => {
+      console.warn("Recap play error:", err);
+      setIsPlayingRecap(false);
+    });
   };
 
   const handleGenerateRecap = async () => {
@@ -206,14 +218,31 @@ export default function TodayDashboardPage() {
       }
     }
 
-    if (audioUrl) {
-      const audio = new Audio(audioUrl);
-      audioCallRef.current = audio;
-      audio.onended = () => setPlayingCallId(null);
-      audio.onerror = () => setPlayingCallId(null);
-      audio.play().catch((e) => console.warn("Audio play prevented:", e));
-      setPlayingCallId(prospect.id);
-    }
+    const targetUrl = audioUrl || `/api/call-audio?prospectId=${encodeURIComponent(prospect.id)}&voice=${encodeURIComponent(voiceName)}`;
+    const audio = new Audio(targetUrl);
+    audioCallRef.current = audio;
+    audio.onended = () => setPlayingCallId(null);
+    audio.onerror = async () => {
+      console.warn("Direct audio load failed, streaming from /api/call-audio...");
+      try {
+        const streamUrl = `/api/call-audio?prospectId=${encodeURIComponent(prospect.id)}&voice=${encodeURIComponent(voiceName)}&t=${Date.now()}`;
+        const fallback = new Audio(streamUrl);
+        audioCallRef.current = fallback;
+        fallback.onended = () => setPlayingCallId(null);
+        fallback.play().then(() => setPlayingCallId(prospect.id)).catch(() => setPlayingCallId(null));
+      } catch {
+        setPlayingCallId(null);
+      }
+    };
+
+    audio.play().then(() => setPlayingCallId(prospect.id)).catch((e) => {
+      console.warn("Audio play prevented, retrying stream:", e);
+      const streamUrl = `/api/call-audio?prospectId=${encodeURIComponent(prospect.id)}&voice=${encodeURIComponent(voiceName)}&t=${Date.now()}`;
+      const fallback = new Audio(streamUrl);
+      audioCallRef.current = fallback;
+      fallback.onended = () => setPlayingCallId(null);
+      fallback.play().then(() => setPlayingCallId(prospect.id)).catch(() => setPlayingCallId(null));
+    });
   };
 
   // Synthetic Dialing using the Virtual Script & Current Voice

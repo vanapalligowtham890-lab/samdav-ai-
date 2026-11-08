@@ -181,19 +181,31 @@ export default function CallsPage() {
       }
     }
 
-    if (!audioUrl) {
-      audioUrl = `/audio/${call.id}.wav`;
-    }
-
-    const audio = new Audio(audioUrl);
+    const targetUrl = audioUrl || `/api/call-audio?prospectId=${encodeURIComponent(call.id)}`;
+    const audio = new Audio(targetUrl);
     audioPlayerRef.current = audio;
     audio.onended = () => setPlayingId(null);
-    audio.onerror = () => {
-      setPlayingId(null);
+    audio.onerror = async () => {
+      console.warn("Direct audio load failed, streaming from /api/call-audio...");
+      try {
+        const streamUrl = `/api/call-audio?prospectId=${encodeURIComponent(call.id)}&t=${Date.now()}`;
+        const fallback = new Audio(streamUrl);
+        audioPlayerRef.current = fallback;
+        fallback.onended = () => setPlayingId(null);
+        fallback.play().then(() => setPlayingId(call.id)).catch(() => setPlayingId(null));
+      } catch {
+        setPlayingId(null);
+      }
     };
 
-    audio.play().catch((e) => console.warn("Audio play prevented:", e));
-    setPlayingId(call.id);
+    audio.play().then(() => setPlayingId(call.id)).catch((e) => {
+      console.warn("Audio play prevented, retrying stream:", e);
+      const streamUrl = `/api/call-audio?prospectId=${encodeURIComponent(call.id)}&t=${Date.now()}`;
+      const fallback = new Audio(streamUrl);
+      audioPlayerRef.current = fallback;
+      fallback.onended = () => setPlayingId(null);
+      fallback.play().then(() => setPlayingId(call.id)).catch(() => setPlayingId(null));
+    });
   };
 
   /**

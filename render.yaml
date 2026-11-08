@@ -20,3 +20,4 @@ services:
         value: https://gnani-e666b-default-rtdb.europe-west1.firebasedatabase.app
       - key: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
         value: gnani-e666b.firebaseapp.com
+

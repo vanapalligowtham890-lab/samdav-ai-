@@ -97,4 +97,89 @@ export async function POST(req: NextRequest) {
   }
 }
 
+export async function GET(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const prospectId = searchParams.get("prospectId") || searchParams.get("id");
+    const overrideVoice = searchParams.get("voice");
+
+    if (!prospectId) {
+      return new NextResponse("Missing prospectId query parameter", { status: 400 });
+    }
+
+    const savedVoice = (db.prepare("SELECT value FROM settings WHERE key = 'voice'").get() as any)?.value || "Shivani";
+    const chosenVoice = overrideVoice || savedVoice;
+    const voiceDef = ALL_VOICES.find(v => v.id.toLowerCase() === chosenVoice.toLowerCase()) || ALL_VOICES[0];
+    const company = (db.prepare("SELECT value FROM settings WHERE key = 'business_name'").get() as any)?.value || "Our Business";
+
+    let prospect: any = db.prepare("SELECT * FROM cold_call_campaigns WHERE id = ?").get(prospectId);
+    if (!prospect) {
+      prospect = db.prepare("SELECT * FROM calls WHERE id = ?").get(prospectId);
+    }
+
+    // 1. If audio file already exists on disk, stream it immediately
+    if (prospect && prospect.audio_url) {
+      const fullPath = path.join(process.cwd(), "public", prospect.audio_url.replace(/^\//, ""));
+      if (fs.existsSync(fullPath)) {
+        const buffer = fs.readFileSync(fullPath);
+        return new NextResponse(buffer, {
+          headers: {
+            "Content-Type": "audio/wav",
+            "Content-Length": buffer.length.toString(),
+            "Accept-Ranges": "bytes",
+            "Cache-Control": "public, max-age=86400",
+          },
+        });
+      }
+    }
+
+    // 2. Synthesize on-the-fly
+    const rawActiveScript = (db.prepare("SELECT value FROM settings WHERE key = 'active_script'").get() as any)?.value;
+    let activeScript = DEFAULT_VIRTUAL_SCRIPTS.telugu_high_english;
+    if (rawActiveScript) {
+      try { activeScript = JSON.parse(rawActiveScript); } catch {}
+    }
+
+    let speechText = prospect
+      ? extractFullCallSpeechText(prospect, voiceDef.name, company, activeScript)
+      : `Hello, ${voiceDef.name} calling from ${company}.`;
+
+    speechText = speechText.replace(/^["']|["']$/g, "").replace(/\s*\([^)]*\)/g, "").trim();
+
+    const savedTimbreLang = (db.prepare("SELECT value FROM settings WHERE key = 'timbre_language'").get() as any)?.value;
+    const synthLang = savedTimbreLang || voiceDef.language || "te-IN";
+
+    const result = await synthesizeSpeech(speechText, {
+      voice: voiceDef.id,
+      model: voiceDef.model,
+      language: synthLang,
+    });
+
+    if (prospectId) {
+      try {
+        db.prepare("UPDATE cold_call_campaigns SET audio_url = ? WHERE id = ?").run(result.audioUrl, prospectId);
+        db.prepare("UPDATE calls SET audio_url = ? WHERE id = ?").run(result.audioUrl, prospectId);
+      } catch {}
+    }
+
+    const genPath = path.join(process.cwd(), "public", result.audioUrl.replace(/^\//, ""));
+    if (fs.existsSync(genPath)) {
+      const buffer = fs.readFileSync(genPath);
+      return new NextResponse(buffer, {
+        headers: {
+          "Content-Type": "audio/wav",
+          "Content-Length": buffer.length.toString(),
+          "Accept-Ranges": "bytes",
+          "Cache-Control": "public, max-age=86400",
+        },
+      });
+    }
+
+    return new NextResponse("Audio generation failed", { status: 500 });
+  } catch (err: any) {
+    console.error("GET call-audio stream error:", err);
+    return new NextResponse(`Error: ${err.message}`, { status: 500 });
+  }
+}
+
 
