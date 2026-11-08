@@ -1,0 +1,5 @@
+file 'C:/Users/vanap/OneDrive/Desktop/gnani ai inten/public/audio/recap_72f72e83eb5c.wav'
+file 'C:/Users/vanap/OneDrive/Desktop/gnani ai inten/public/audio/recap_675b3859e8b0.wav'
+file 'C:/Users/vanap/OneDrive/Desktop/gnani ai inten/public/audio/recap_4ddcbe7e7475.wav'
+file 'C:/Users/vanap/OneDrive/Desktop/gnani ai inten/public/audio/recap_36fd491c5790.wav'
+file 'C:/Users/vanap/OneDrive/Desktop/gnani ai inten/public/audio/recap_9fa4a96e16b3.wav'

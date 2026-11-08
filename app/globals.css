@@ -1,0 +1,97 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@theme {
+  --color-paper: #F6F1E7;
+  --color-surface: #FFFBF3;
+  --color-ink: #1F1B16;
+  --color-muted: #7A6F60;
+  --color-accent: #C4522A;
+  --color-secondary: #2F5D50;
+  --color-border: #E2D9C8;
+
+  --font-heading: var(--font-fraunces), Georgia, serif;
+  --font-sans: var(--font-dm-sans), system-ui, -apple-system, sans-serif;
+  --font-telugu: var(--font-noto-sans-telugu), system-ui, sans-serif;
+  --font-telugu-serif: var(--font-noto-serif-telugu), Georgia, serif;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+}
+
+:root {
+  --background: #F6F1E7;
+  --foreground: #1F1B16;
+  --card: #FFFBF3;
+  --card-foreground: #1F1B16;
+  --popover: #FFFBF3;
+  --popover-foreground: #1F1B16;
+  --primary: #C4522A; /* Terracotta accent */
+  --primary-foreground: #FFFBF3;
+  --secondary: #2F5D50; /* Deep green */
+  --secondary-foreground: #FFFBF3;
+  --muted: #EFE8DC;
+  --muted-foreground: #7A6F60;
+  --accent: #C4522A;
+  --accent-foreground: #FFFBF3;
+  --destructive: #A33A1F;
+  --destructive-foreground: #FFFBF3;
+  --border: #E2D9C8;
+  --input: #E2D9C8;
+  --ring: #C4522A;
+  --radius: 8px;
+}
+
+@layer base {
+  * {
+    border-color: #E2D9C8;
+    box-sizing: border-box;
+  }
+  body {
+    background-color: #F6F1E7;
+    color: #1F1B16;
+    font-family: var(--font-sans);
+    line-height: 1.5;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.015em;
+  }
+}
+
+/* Warm paper shadow - soft, not heavy drop shadows */
+.paper-shadow {
+  box-shadow: 0 1px 3px rgba(31, 27, 22, 0.05), 0 4px 12px rgba(31, 27, 22, 0.03);
+}
+
+.paper-shadow-hover {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.paper-shadow-hover:hover {
+  box-shadow: 0 4px 14px rgba(31, 27, 22, 0.08);
+  transform: translateY(-1px);
+}
+
+/* Telugu typography spacing */
+.telugu-text {
+  font-family: var(--font-telugu);
+  line-height: 1.75;
+}
+
+.telugu-quote {
+  font-family: var(--font-telugu-serif);
+  line-height: 1.8;
+}
+
+/* Audio waveform bars animation */
+@keyframes wave-pulse {
+  0%, 100% { height: 6px; }
+  50% { height: 28px; }
+}
+
+.wave-bar {
+  animation: wave-pulse 1.2s ease-in-out infinite;
+}
