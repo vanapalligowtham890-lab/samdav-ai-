@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Vaani Recap — Video Demo Recording Studio (Under 3 Minutes)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --primary: #b85d38;
+      --primary-hover: #9c4c2c;
+      --bg: #fbf8f5;
+      --card-bg: #ffffff;
+      --border: #e8e2dc;
+      --ink: #1f1d1b;
+      --muted: #6e6964;
+      --accent-green: #2b7a5a;
+      --green-bg: #eaf5f0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.5;
+      margin: 0;
+      padding: 24px 16px 60px 16px;
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .top-header {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo-img {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      object-fit: contain;
+      background: #fff;
+      border: 1px solid var(--border);
+      padding: 2px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      color: var(--primary);
+    }
+    .subtitle {
+      margin: 4px 0 0 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .timer-badge {
+      background: var(--green-bg);
+      border: 1px solid #c2e2d4;
+      color: var(--accent-green);
+      font-weight: 700;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pulse-dot {
+      width: 10px;
+      height: 10px;
+      background: var(--accent-green);
+      border-radius: 50%;
+      display: inline-block;
+      animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.9); opacity: 0.8; }
+      50% { transform: scale(1.3); opacity: 1; }
+      100% { transform: scale(0.9); opacity: 0.8; }
+    }
+    .controls-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      align-items: center;
+    }
+    .btn {
+      appearance: none;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+    .btn-secondary {
+      background: #fff;
+      color: var(--ink);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover {
+      background: #f5f2ee;
+    }
+    .btn-record {
+      background: #dc2626;
+      color: #fff;
+    }
+    .btn-record:hover {
+      background: #b91c1c;
+    }
+    .section-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+      position: relative;
+      transition: border-color 0.2s;
+    }
+    .section-card.active-playback {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(184, 93, 56, 0.2);
+    }
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .sec-tag {
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--ink);
+    }
+    .time-slot {
+      background: #f3ede7;
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+    .screen-pill {
+      background: #edf2f7;
+      color: #2d3748;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin-left: 6px;
+    }
+    .action-instruction {
+      font-size: 12px;
+      background: #fffcf9;
+      border-left: 3px solid var(--primary);
+      padding: 8px 12px;
+      margin-bottom: 12px;
+      color: #4a4540;
+      border-radius: 0 6px 6px 0;
+    }
+    .teleprompter-box {
+      font-size: 15px;
+      line-height: 1.6;
+      color: #1a1a1a;
+      background: #fafafa;
+      border: 1px solid #f0eeea;
+      padding: 14px 16px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+      font-weight: 400;
+    }
+    .audio-player-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    audio {
+      height: 36px;
+      outline: none;
+    }
+    .recording-notice {
+      background: #fff9db;
+      border: 1px solid #fae588;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: #744210;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- TOP HEADER -->
+    <div class="top-header">
+      <div class="header-row">
+        <div class="brand-title">
+          <img src="/logo.png" alt="Vaani Recap" class="logo-img">
+          <div>
+            <h1>Vaani Recap — Video Demo Studio</h1>
+            <p class="subtitle">AI Voice Narration: Gnani Timbre v3.0 Harshad (Indian English) &bull; 100% Pre-Recorded &amp; Calibrated</p>
+          </div>
+        </div>
+        <div class="timer-badge">
+          <span class="pulse-dot"></span>
+          <span>DURATION: 2m 39s (STRICTLY &lt; 3 MINS)</span>
+        </div>
+      </div>
+
+      <!-- MAIN RECORDING CONTROLS -->
+      <div class="controls-bar">
+        <button id="playFullBtn" class="btn btn-primary" onclick="toggleFullNarration()">
+          <span id="playFullIcon">▶</span>
+          <span id="playFullText">Play Continuous Full Narration (2m 39s)</span>
+        </button>
+        <button id="screenRecordBtn" class="btn btn-record" onclick="startScreenRecording()">
+          ⏺ Record Screen &amp; Audio (Chrome WebM/MP4)
+        </button>
+        <a href="/demo_audio/vaani_recap_full_demo_narration.wav" download class="btn btn-secondary">
+          ⬇ Download Full Merged WAV
+        </a>
+        <a href="http://localhost:3000" target="_blank" class="btn btn-secondary">
+          ↗ Open Localhost Demo App
+        </a>
+      </div>
+      <div id="recordingStatus" style="display:none; margin-top: 12px; font-size: 13px; font-weight: 600; color: #dc2626;"></div>
+    </div>
+
+    <div class="recording-notice">
+      💡 <strong>Quick How-To:</strong> Click <strong>"Record Screen &amp; Audio"</strong> to capture your browser tab while clicking through the pages at <a href="http://localhost:3000" target="_blank" style="color:#b85d38;font-weight:600;">http://localhost:3000</a>. Alternatively, play each section below one-by-one or drop the pre-recorded WAV files into Windows Clipchamp or CapCut!
+    </div>
+
+    <!-- AUDIO ELEMENT FOR FULL PLAYBACK -->
+    <audio id="fullAudio" src="/demo_audio/vaani_recap_full_demo_narration.wav" preload="auto"></audio>
+
+    <!-- SECTION 1 -->
+    <div class="section-card" id="card-sec1">
+      <div class="card-top">
+        <div>
+          <span class="sec-tag">1. Introduction &amp; The Problem</span>
+          <span class="screen-pill">Screen: Landing Page (/)</span>
+        </div>
+        <span class="time-slot">0:00 &rarr; 0:36 (36.8s)</span>
+      </div>
+      <div class="action-instruction">
+        👉 <strong>Action on Screen:</strong> Open homepage (<a href="http://localhost:3000/" target="_blank">/</a>). Show the header logo, problem headline, voice audition chips, and Gnani attribution badges.
+      </div>
+      <div class="teleprompter-box">
+        "Hello judges! I am Gowtham, presenting Vaani Recap — an autonomous multilingual AI cold calling and lead briefing agent built for over 63 million Indian SMBs. Vaani Recap automates outbound calling, transcribes regional calls, and delivers an audio evening recap under 60 words."
+      </div>
+      <div class="audio-player-row">
+        <audio controls src="/demo_audio/section_1_intro.wav"></audio>
+        <a href="/demo_audio/section_1_intro.wav" download class="btn btn-secondary" style="font-size:11px;padding:6px 12px;">⬇ Download Section 1 WAV</a>
+      </div>
+    </div>
+
+    <!-- SECTION 2 -->
+    <div class="section-card" id="card-sec2">
+      <div class="card-top">
+        <div>
+          <span class="sec-tag">2. Live Dashboard &amp; Outbound Dialing</span>
+          <span class="screen-pill">Screen: Dashboard (/today)</span>
+        </div>
+        <span class="time-slot">0:37 &rarr; 1:06 (29.0s)</span>
+      </div>
+      <div class="action-instruction">
+        👉 <strong>Action on Screen:</strong> Click to <a href="http://localhost:3000/today" target="_blank">/today</a>. Point to Verified Forwarding Number (+91 98765 43210), 6 KPI cards, and click <strong>'Dial Next Prospect'</strong>.
+      </div>
+      <div class="teleprompter-box">
+        "Here is the live Dashboard. Outbound calls route through the owner's verified forwarding number, showing a trusted caller ID. When I click Dial Next Prospect, the AI agent initiates the cold call using our sector campaign script and engages the customer."
+      </div>
+      <div class="audio-player-row">
+        <audio controls src="/demo_audio/section_2_dashboard.wav"></audio>
+        <a href="/demo_audio/section_2_dashboard.wav" download class="btn btn-secondary" style="font-size:11px;padding:6px 12px;">⬇ Download Section 2 WAV</a>
+      </div>
+    </div>
+
+    <!-- SECTION 3 -->
+    <div class="section-card" id="card-sec3">
+      <div class="card-top">
+        <div>
+          <span class="sec-tag">3. Call Recordings &amp; Multi-Voice Dialogue</span>
+          <span class="screen-pill">Screen: Recordings (/calls)</span>
+        </div>
+        <span class="time-slot">1:07 &rarr; 1:39 (32.0s)</span>
+      </div>
+      <div class="action-instruction">
+        👉 <strong>Action on Screen:</strong> Click to <a href="http://localhost:3000/calls" target="_blank">/calls</a>. Hit <strong>Play</strong> on a call to hear contrasting agent and customer voices. Point to verbatim STT transcript and budget highlight.
+      </div>
+      <div class="teleprompter-box">
+        "In Recordings, every call is synthesized using Gnani Timbre v3.0 with distinct, contrasting voices for agent and customer without repetition. Simultaneously, Gnani Prisma STT transcribes the call, capturing customer intent and budget."
+      </div>
+      <div class="audio-player-row">
+        <audio controls src="/demo_audio/section_3_recordings.wav"></audio>
+        <a href="/demo_audio/section_3_recordings.wav" download class="btn btn-secondary" style="font-size:11px;padding:6px 12px;">⬇ Download Section 3 WAV</a>
+      </div>
+    </div>
+
+    <!-- SECTION 4 -->
+    <div class="section-card" id="card-sec4">
+      <div class="card-top">
+        <div>
+          <span class="sec-tag">4. Spoken Evening Brief &amp; Lead Card</span>
+          <span class="screen-pill">Screen: Lead Card (/leads/[id])</span>
+        </div>
+        <span class="time-slot">1:40 &rarr; 2:09 (28.8s)</span>
+      </div>
+      <div class="action-instruction">
+        👉 <strong>Action on Screen:</strong> On <a href="http://localhost:3000/today" target="_blank">/today</a>, play the Spoken Evening Brief (<60 words). Click <strong>'View lead card'</strong> to display objection quotes and pre-drafted WhatsApp reply.
+      </div>
+      <div class="teleprompter-box">
+        "At day end, owners listen to our Spoken Evening Brief under 60 words, synthesized with Gnani Timbre, highlighting won deals and callbacks. Clicking any prospect opens their structured Lead Card with objection quotes and a one-click WhatsApp follow-up."
+      </div>
+      <div class="audio-player-row">
+        <audio controls src="/demo_audio/section_4_spoken_recap.wav"></audio>
+        <a href="/demo_audio/section_4_spoken_recap.wav" download class="btn btn-secondary" style="font-size:11px;padding:6px 12px;">⬇ Download Section 4 WAV</a>
+      </div>
+    </div>
+
+    <!-- SECTION 5 -->
+    <div class="section-card" id="card-sec5">
+      <div class="card-top">
+        <div>
+          <span class="sec-tag">5. 10 Indian Language Modes &amp; Submission Closing</span>
+          <span class="screen-pill">Screen: Settings (/settings)</span>
+        </div>
+        <span class="time-slot">2:09 &rarr; 2:39 (29.6s)</span>
+      </div>
+      <div class="action-instruction">
+        👉 <strong>Action on Screen:</strong> Click to <a href="http://localhost:3000/settings" target="_blank">/settings</a>. Show 10 Indian Language Modes, 16+ Timbre voices, SQLite zero-billing cache, and close with a final thank you!
+      </div>
+      <div class="teleprompter-box">
+        "In Settings, Vaani Recap supports 10 Indian language modes across Telugu, Hinglish, Hindi, and Tamil, with over 16 verified Gnani Timbre voices. Audio hashes are cached in SQLite for zero duplicate billing. Thank you!"
+      </div>
+      <div class="audio-player-row">
+        <audio controls src="/demo_audio/section_5_settings_conclusion.wav"></audio>
+        <a href="/demo_audio/section_5_settings_conclusion.wav" download class="btn btn-secondary" style="font-size:11px;padding:6px 12px;">⬇ Download Section 5 WAV</a>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const fullAudio = document.getElementById('fullAudio');
+    const playFullBtn = document.getElementById('playFullBtn');
+    const playFullIcon = document.getElementById('playFullIcon');
+    const playFullText = document.getElementById('playFullText');
+
+    function toggleFullNarration() {
+      if (fullAudio.paused) {
+        fullAudio.play();
+        playFullIcon.textContent = '⏸';
+        playFullText.textContent = 'Pause Continuous Full Narration';
+      } else {
+        fullAudio.pause();
+        playFullIcon.textContent = '▶';
+        playFullText.textContent = 'Play Continuous Full Narration (2m 39s)';
+      }
+    }
+
+    fullAudio.onended = () => {
+      playFullIcon.textContent = '▶';
+      playFullText.textContent = 'Play Continuous Full Narration (2m 39s)';
+    };
+
+    // Active Card Highlighting during continuous playback
+    fullAudio.ontimeupdate = () => {
+      const t = fullAudio.currentTime;
+      document.querySelectorAll('.section-card').forEach(c => c.classList.remove('active-playback'));
+      if (t < 36.8) document.getElementById('card-sec1').classList.add('active-playback');
+      else if (t < 66.0) document.getElementById('card-sec2').classList.add('active-playback');
+      else if (t < 99.0) document.getElementById('card-sec3').classList.add('active-playback');
+      else if (t < 129.0) document.getElementById('card-sec4').classList.add('active-playback');
+      else document.getElementById('card-sec5').classList.add('active-playback');
+    };
+
+    // Screen Recording via browser MediaRecorder
+    let mediaRecorder;
+    let recordedChunks = [];
+
+    async function startScreenRecording() {
+      const statusDiv = document.getElementById('recordingStatus');
+      try {
+        const stream = await navigator.mediaDevices.getDisplayMedia({
+          video: { cursor: "always", displaySurface: "browser" },
+          audio: true
+        });
+
+        recordedChunks = [];
+        mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data.size > 0) recordedChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(recordedChunks, { type: 'video/webm' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'vaani_recap_submission_video_demo.webm';
+          a.click();
+          statusDiv.style.display = 'block';
+          statusDiv.style.color = '#2b7a5a';
+          statusDiv.textContent = '✅ Video recording saved as vaani_recap_submission_video_demo.webm!';
+        };
+
+        mediaRecorder.start();
+        statusDiv.style.display = 'block';
+        statusDiv.style.color = '#dc2626';
+        statusDiv.textContent = '🔴 RECORDING IN PROGRESS! Perform your actions at localhost:3000. Stop sharing when done to save.';
+        
+        // Also start the narration!
+        fullAudio.currentTime = 0;
+        fullAudio.play();
+        playFullIcon.textContent = '⏸';
+        playFullText.textContent = 'Pause Continuous Full Narration';
+
+      } catch (err) {
+        console.error("Screen recording cancelled or failed:", err);
+      }
+    }
+  </script>
+</body>
+</html>
