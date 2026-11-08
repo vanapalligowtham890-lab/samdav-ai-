@@ -17,6 +17,15 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
   title: "Vaani Recap | Telugu & Hinglish Call-to-Lead Assistant",
   description: "Small business sales call summaries powered by Gnani Prisma & Timbre",
+  icons: {
+    icon: [
+      { url: "/logo.png", type: "image/png" },
+      { url: "/icon.png", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 import { Providers } from "@/components/providers";

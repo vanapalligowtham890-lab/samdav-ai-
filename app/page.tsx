@@ -89,9 +89,13 @@ export default function LandingPage() {
       {/* Top Header with High-Visibility Log in & Sign up Buttons */}
       <header className="border-b border-border bg-surface/90 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5 shrink-0">
-            <div className="w-8 h-8 rounded-lg bg-accent text-surface flex items-center justify-center font-heading font-bold text-lg shadow-xs shrink-0">
-              V
+          <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
+            <div className="w-8 h-8 rounded-lg bg-surface border border-border/80 p-0.5 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform shrink-0 overflow-hidden">
+              <img
+                src="/logo.png"
+                alt="Vaani Recap"
+                className="w-full h-full object-contain"
+              />
             </div>
             <div className="shrink-0 flex flex-col justify-center">
               <span className="font-heading text-base sm:text-lg font-bold tracking-tight text-ink leading-tight whitespace-nowrap">

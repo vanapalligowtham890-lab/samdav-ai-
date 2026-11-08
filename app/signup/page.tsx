@@ -66,9 +66,13 @@ function SignUpForm() {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <BlurFade delay={0.05}>
           <div className="text-center space-y-2">
-            <Link href="/" className="inline-flex items-center gap-2">
-              <div className="w-9 h-9 rounded-lg bg-accent text-surface flex items-center justify-center font-heading font-bold text-xl shadow-xs">
-                V
+            <Link href="/" className="inline-flex items-center gap-2 group">
+              <div className="w-9 h-9 rounded-lg bg-surface border border-border/80 p-0.5 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform overflow-hidden">
+                <img
+                  src="/logo.png"
+                  alt="Vaani Recap"
+                  className="w-full h-full object-contain"
+                />
               </div>
               <span className="font-heading text-2xl font-bold tracking-tight text-ink">
                 Vaani Recap

@@ -64,8 +64,8 @@ export default function AppLayout({
   if (loading) {
     return (
       <div className="min-h-screen bg-paper flex flex-col items-center justify-center space-y-3">
-        <div className="w-10 h-10 rounded-lg bg-accent text-surface flex items-center justify-center font-heading font-bold text-xl shadow-xs animate-pulse">
-          V
+        <div className="w-10 h-10 rounded-lg bg-surface border border-border/80 p-1 flex items-center justify-center shadow-xs animate-pulse">
+          <img src="/logo.png" alt="Vaani Recap" className="w-full h-full object-contain" />
         </div>
         <p className="text-xs text-muted font-medium">Verifying user authorization...</p>
       </div>
@@ -104,8 +104,12 @@ export default function AppLayout({
           <div className="flex items-center gap-4 lg:gap-6 shrink-0">
             {/* Logo & Brand */}
             <Link href="/today" className="flex items-center gap-2.5 group shrink-0">
-              <div className="w-8 h-8 rounded-lg bg-accent text-surface flex items-center justify-center font-heading font-bold text-lg shadow-xs group-hover:opacity-90 transition-opacity shrink-0">
-                V
+              <div className="w-8 h-8 rounded-lg bg-surface border border-border/80 p-0.5 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform shrink-0 overflow-hidden">
+                <img
+                  src="/logo.png"
+                  alt="Vaani Recap"
+                  className="w-full h-full object-contain"
+                />
               </div>
               <div className="flex flex-col justify-center shrink-0">
                 <span className="font-heading text-base sm:text-lg font-bold tracking-tight text-ink leading-tight whitespace-nowrap">
