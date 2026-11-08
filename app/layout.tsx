@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fraunces, DM_Sans, Noto_Sans_Telugu, Noto_Serif_Telugu } from "next/font/google";
+import { Fraunces, DM_Sans } from "next/font/google";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -11,20 +11,6 @@ const fraunces = Fraunces({
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
   subsets: ["latin"],
-  display: "swap",
-});
-
-const notoSansTelugu = Noto_Sans_Telugu({
-  variable: "--font-noto-sans-telugu",
-  subsets: ["telugu"],
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-});
-
-const notoSerifTelugu = Noto_Serif_Telugu({
-  variable: "--font-noto-serif-telugu",
-  subsets: ["telugu"],
-  weight: ["400", "700"],
   display: "swap",
 });
 
@@ -44,7 +30,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${fraunces.variable} ${dmSans.variable} ${notoSansTelugu.variable} ${notoSerifTelugu.variable}`}
+      className={`${fraunces.variable} ${dmSans.variable}`}
     >
       <body 
         suppressHydrationWarning
