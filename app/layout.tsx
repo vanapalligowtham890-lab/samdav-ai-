@@ -24,7 +24,7 @@ const notoSansTelugu = Noto_Sans_Telugu({
 const notoSerifTelugu = Noto_Serif_Telugu({
   variable: "--font-noto-serif-telugu",
   subsets: ["telugu"],
-  weight: ["400", "600", "700"],
+  weight: ["400", "700"],
   display: "swap",
 });
 

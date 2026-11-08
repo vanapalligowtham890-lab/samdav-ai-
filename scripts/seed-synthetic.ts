@@ -6,7 +6,7 @@ dotenv.config({ path: path.join(process.cwd(), ".env.local") });
 dotenv.config({ path: path.join(process.cwd(), ".env") });
 
 import db from "../lib/db";
-import { SYNTHETIC_CALLS } from "../app/api/synthetic/route";
+import { SYNTHETIC_CALLS } from "../lib/synthetic-data";
 import { computeStringHash, computeFileHash } from "../lib/audio";
 
 function createCleanBeepWav(outputPath: string, durationSec: number) {

@@ -6,7 +6,6 @@ import { computeFileHash } from "@/lib/audio";
 import { SYNTHETIC_CALLS } from "@/lib/synthetic-data";
 import { seedSectorCampaign, syncCampaignCallsToDb } from "@/lib/sector-campaigns";
 
-export { SYNTHETIC_CALLS };
 
 export async function POST(req: NextRequest) {
   try {
