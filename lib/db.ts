@@ -65,6 +65,14 @@ db.exec(`
   );
 `);
 
+// Safe migrations for audio_url support across calls and leads
+try {
+  db.exec("ALTER TABLE calls ADD COLUMN audio_url TEXT;");
+} catch (_) {}
+try {
+  db.exec("ALTER TABLE leads ADD COLUMN audio_url TEXT;");
+} catch (_) {}
+
 // Seed default settings if not exists
 const insertSetting = db.prepare(`
   INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)

@@ -32,6 +32,8 @@ interface CallItem {
   urgency: string | null;
   lead_id: string | null;
   filename: string;
+  audio_url?: string | null;
+  language_code?: string | null;
 }
 
 export default function CallsPage() {
@@ -138,7 +140,7 @@ export default function CallsPage() {
     }
   };
 
-  const togglePlayAudio = (call: CallItem) => {
+  const togglePlayAudio = async (call: CallItem) => {
     if (playingId === call.id) {
       if (audioPlayerRef.current) {
         audioPlayerRef.current.pause();
@@ -151,13 +153,42 @@ export default function CallsPage() {
       audioPlayerRef.current.pause();
     }
 
-    // Audio files are in /audio/[filename] or /audio/[id].wav
-    const audioUrl = `/audio/${call.id}.wav`;
+    let audioUrl = call.audio_url;
+    if (!audioUrl && call.filename && !call.filename.startsWith("demo_call")) {
+      audioUrl = `/audio/${call.filename}`;
+    }
+
+    // Fallback on-demand synthesis if audio_url is missing
+    if (!audioUrl || audioUrl.includes("demo_call")) {
+      try {
+        const res = await fetch("/api/call-audio", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            prospectId: call.id,
+            transcript: call.transcript,
+            customerName: call.customer_name,
+            need: call.need,
+          }),
+        });
+        const data = await res.json();
+        if (data.audioUrl) {
+          audioUrl = data.audioUrl;
+          call.audio_url = data.audioUrl;
+        }
+      } catch (err) {
+        console.warn("Audio synthesis fallback failed:", err);
+      }
+    }
+
+    if (!audioUrl) {
+      audioUrl = `/audio/${call.id}.wav`;
+    }
+
     const audio = new Audio(audioUrl);
     audioPlayerRef.current = audio;
     audio.onended = () => setPlayingId(null);
     audio.onerror = () => {
-      // Fallback if file not on static path
       setPlayingId(null);
     };
 
@@ -332,10 +363,15 @@ export default function CallsPage() {
                         <h3 className="font-heading text-lg text-ink font-medium">
                           {call.original_name || call.filename}
                         </h3>
-                        <div className="flex items-center gap-2 text-xs text-muted">
-                          <span>{Math.round(call.duration_seconds || 35)} seconds</span>
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
+                          <span>{Math.round(call.duration_seconds || 35)}s duration</span>
                           <span>·</span>
-                          <span>Prisma v3.0 (te-IN)</span>
+                          <span className="uppercase">{call.language_code || "te-IN"}</span>
+                          {call.audio_url && (
+                            <span className="text-[10px] bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-medium px-1.5 py-0.5 rounded border border-emerald-500/20">
+                              Gnani Timbre Audio
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>

@@ -13,6 +13,7 @@ import { synthesizeSpeech } from "@/lib/gnani";
 import { ALL_VOICES } from "@/lib/voice-catalog";
 import { renderScript, DEFAULT_VIRTUAL_SCRIPTS } from "@/lib/virtual-script";
 import { syncRealtimeDb } from "@/lib/firebase";
+import { syncCampaignCallsToDb } from "@/lib/sector-campaigns";
 
 export async function GET() {
   try {
@@ -266,6 +267,9 @@ export async function POST(req: NextRequest) {
           call_time = 'Just now'
         WHERE id = ?
       `).run(outcome, duration, fullTranscript, audioUrl, keyQuote, target.id);
+
+      // Sync freshly dialed call directly into primary calls and leads tables
+      syncCampaignCallsToDb(company, language);
 
       const all = getCampaignProspects();
       const metrics = calculateCampaignMetrics(all);

@@ -110,21 +110,55 @@ export default function LeadDetailPage({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const togglePlayAudio = () => {
-    if (!audioRef.current && lead?.call_id) {
-      audioRef.current = new Audio(`/audio/${lead.call_id}.wav`);
-      audioRef.current.onended = () => setIsPlaying(false);
+  const togglePlayAudio = async () => {
+    if (isPlaying && audioRef.current) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+      return;
+    }
+
+    let audioUrl = lead?.audio_url;
+    if (!audioUrl && lead?.filename && !lead.filename.startsWith("demo_call")) {
+      audioUrl = `/audio/${lead.filename}`;
+    }
+
+    if (!audioUrl || audioUrl.includes("demo_call")) {
+      // Trigger on-demand synthesis
+      try {
+        const res = await fetch("/api/call-audio", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            prospectId: lead?.call_id || lead?.id,
+            transcript: lead?.transcript,
+            customerName: lead?.customer_name,
+            need: lead?.need,
+          }),
+        });
+        const data = await res.json();
+        if (data.audioUrl) {
+          audioUrl = data.audioUrl;
+          if (lead) lead.audio_url = data.audioUrl;
+        }
+      } catch (err) {
+        console.warn("Lead audio synthesis failed:", err);
+      }
+    }
+
+    if (!audioUrl) {
+      audioUrl = `/audio/${lead?.call_id || lead?.id}.wav`;
     }
 
     if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      } else {
-        audioRef.current.play().catch((e) => console.warn(e));
-        setIsPlaying(true);
-      }
+      audioRef.current.pause();
     }
+
+    const audio = new Audio(audioUrl);
+    audioRef.current = audio;
+    audio.onended = () => setIsPlaying(false);
+    audio.onerror = () => setIsPlaying(false);
+    audio.play().catch((e) => console.warn("Audio play prevented:", e));
+    setIsPlaying(true);
   };
 
   if (loading) {

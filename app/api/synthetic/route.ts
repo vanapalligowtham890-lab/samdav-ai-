@@ -4,84 +4,26 @@ import path from "path";
 import db from "@/lib/db";
 import { computeFileHash } from "@/lib/audio";
 import { SYNTHETIC_CALLS } from "@/lib/synthetic-data";
+import { seedSectorCampaign, syncCampaignCallsToDb } from "@/lib/sector-campaigns";
 
 export { SYNTHETIC_CALLS };
 
 export async function POST(req: NextRequest) {
   try {
-    const dataDir = path.join(process.cwd(), "data", "synthetic-calls");
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
-    }
+    const businessName = (db.prepare("SELECT value FROM settings WHERE key = 'business_name'").get() as any)?.value || "Ishiva digital";
+    const businessType = (db.prepare("SELECT value FROM settings WHERE key = 'business_type'").get() as any)?.value || "Digital Marketing & Agency";
+    const voice = (db.prepare("SELECT value FROM settings WHERE key = 'voice'").get() as any)?.value || "Shivani";
+    const language = (db.prepare("SELECT value FROM settings WHERE key = 'language'").get() as any)?.value || "te-en";
 
-    const publicAudioDir = path.join(process.cwd(), "public", "audio");
-    if (!fs.existsSync(publicAudioDir)) {
-      fs.mkdirSync(publicAudioDir, { recursive: true });
-    }
-
-    // Seed all 6 calls into SQLite database
-    let seededCount = 0;
-    for (const item of SYNTHETIC_CALLS) {
-      const scriptPath = path.join(dataDir, `${item.id}.txt`);
-      fs.writeFileSync(scriptPath, item.transcript, "utf8");
-
-      const audioFileName = `${item.id}.wav`;
-      const audioPath = path.join(dataDir, audioFileName);
-      const publicPath = path.join(publicAudioDir, audioFileName);
-
-      // Create a lightweight valid WAV placeholder if not yet generated
-      if (!fs.existsSync(audioPath) && !fs.existsSync(publicPath)) {
-        createCleanBeepWav(publicPath, item.duration);
-        fs.copyFileSync(publicPath, audioPath);
-      } else if (!fs.existsSync(publicPath) && fs.existsSync(audioPath)) {
-        fs.copyFileSync(audioPath, publicPath);
-      }
-
-      const fileHash = computeFileHash(publicPath);
-
-      // Insert or ignore into calls table
-      db.prepare(`
-        INSERT OR REPLACE INTO calls (
-          id, filename, original_name, file_path, file_hash, duration_seconds,
-          language_code, status, transcript, detected_language
-        ) VALUES (?, ?, ?, ?, ?, ?, 'te-IN', 'completed', ?, 'te-IN')
-      `).run(
-        item.id,
-        audioFileName,
-        `${item.business} Call.wav`,
-        audioPath,
-        fileHash,
-        item.duration,
-        item.transcript
-      );
-
-      // Insert or replace lead
-      db.prepare(`
-        INSERT OR REPLACE INTO leads (
-          id, call_id, customer_name, need, budget, objections,
-          urgency, next_step, follow_up_date, key_quote, follow_up_message, status
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new')
-      `).run(
-        `lead_${item.id}`,
-        item.id,
-        item.lead.customerName,
-        item.lead.need,
-        item.lead.budget,
-        JSON.stringify(item.lead.objections),
-        item.lead.urgency,
-        item.lead.nextStep,
-        item.lead.followUpDate,
-        item.lead.keyQuote,
-        item.lead.followUpMessage
-      );
-
-      seededCount++;
-    }
+    // Preload campaign with authentic Gnani Timbre speech synthesis and sync to calls and leads tables
+    const seeded = await seedSectorCampaign(businessName, businessType, voice, language);
+    syncCampaignCallsToDb(businessName);
 
     return NextResponse.json({
       success: true,
-      message: `Seeded ${seededCount} realistic small-business Telugu calls into SQLite`,
-      calls: SYNTHETIC_CALLS,
+      message: `Seeded ${seeded.count} realistic sector calls for ${businessName} with ${voice} audio into SQLite and Firebase`,
+      prospects: seeded.prospects,
+      metrics: seeded.metrics,
     });
   } catch (err: any) {
     console.error("Synthetic seeding error:", err);

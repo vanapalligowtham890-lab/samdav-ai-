@@ -1,3 +1,4 @@
+import path from "path";
 import db from "./db";
 import { ColdCallProspect, CampaignMetrics, calculateCampaignMetrics } from "./campaign";
 import { syncRealtimeDb } from "./firebase";
@@ -668,6 +669,9 @@ export async function seedSectorCampaign(
   db.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('timbre_language', ?)").run(timbreLanguage);
   db.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('active_script', ?)").run(JSON.stringify(activeScript));
 
+  // 4. Synchronize campaign calls and leads into primary storage for /calls and /leads
+  syncCampaignCallsToDb(companyName, timbreLanguage);
+
   const metrics = calculateCampaignMetrics(prospects);
 
   // Sync to Firebase Realtime Database
@@ -680,5 +684,78 @@ export async function seedSectorCampaign(
     prospects,
     script: activeScript,
   };
+}
+
+/**
+ * Synchronizes active outbound campaign recordings directly into calls and leads tables.
+ * This guarantees that Recordings & Transcripts (/calls) and Lead Details (/leads/[id])
+ * immediately reflect the current business domain, voice persona, and full-length synthesized audio
+ * rather than showing older stale demo versions.
+ */
+export function syncCampaignCallsToDb(companyName?: string, languageCode?: string) {
+  try {
+    const company = companyName || (db.prepare("SELECT value FROM settings WHERE key = 'business_name'").get() as any)?.value || "Our Business";
+    const lang = languageCode || (db.prepare("SELECT value FROM settings WHERE key = 'timbre_language'").get() as any)?.value || "te-IN";
+
+    // 1. Remove obsolete demo placeholder calls
+    db.prepare("DELETE FROM calls WHERE id LIKE 'demo_call_%'").run();
+    db.prepare("DELETE FROM leads WHERE call_id LIKE 'demo_call_%'").run();
+
+    // 2. Fetch all campaign prospects with call activity (closed or ongoing)
+    const prospects = db.prepare("SELECT * FROM cold_call_campaigns WHERE call_status IN ('closed', 'ongoing')").all() as any[];
+
+    const insertCall = db.prepare(`
+      INSERT OR REPLACE INTO calls (
+        id, filename, original_name, file_path, file_hash, duration_seconds,
+        language_code, status, transcript, detected_language, audio_url, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+    `);
+
+    const insertLead = db.prepare(`
+      INSERT OR REPLACE INTO leads (
+        id, call_id, customer_name, need, budget, objections, urgency,
+        next_step, follow_up_date, key_quote, follow_up_message, status, audio_url,
+        updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+    `);
+
+    for (const p of prospects) {
+      const cleanName = cleanCustomerName(p.name);
+      const filename = p.audio_url ? p.audio_url.split("/").pop() || `${p.id}.wav` : `${p.id}.wav`;
+      const filePath = p.audio_url ? path.join(process.cwd(), "public", p.audio_url.replace(/^\//, "")) : "";
+
+      insertCall.run(
+        p.id,
+        filename,
+        `${cleanName} - ${company} Outbound Call.wav`,
+        filePath,
+        `campaign_${p.id}`,
+        p.duration_seconds || 35,
+        lang,
+        p.call_status === "closed" ? "completed" : "in_progress",
+        p.transcript || "",
+        lang,
+        p.audio_url || ""
+      );
+
+      insertLead.run(
+        `lead_${p.id}`,
+        p.id,
+        cleanName,
+        p.need,
+        p.outcome === "won" ? "High Intent / Qualified" : "Standard Inquirer",
+        JSON.stringify([p.key_quote || "Standard inquiry"]),
+        p.outcome === "won" ? "high" : "medium",
+        p.notes || "Follow-up catalog sent via WhatsApp",
+        p.call_time || "Today",
+        p.key_quote || "",
+        `నమస్కారం ${cleanName} గారు, ${company} నుండి మా సంభాషణ వివరాలు పంపిస్తున్నాము. ధన్యవాదాలు!`,
+        p.outcome === "won" ? "qualified" : "contacted",
+        p.audio_url || ""
+      );
+    }
+  } catch (err) {
+    console.warn("Failed to sync campaign calls to SQLite storage:", err);
+  }
 }
 

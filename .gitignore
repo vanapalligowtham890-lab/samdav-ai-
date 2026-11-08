@@ -41,6 +41,9 @@ yarn-error.log*
 *.db-shm
 vaani.db
 
+# dynamic generated audio
+public/audio/recap_*.wav
+
 # temporary scratch
 scratch/
 
