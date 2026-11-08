@@ -172,6 +172,7 @@ export default function SettingsPage() {
         voice,
         language,
         completed: true,
+        updatedAt: new Date().toISOString(),
       });
 
       setSavedSuccess(true);

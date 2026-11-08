@@ -50,7 +50,7 @@ export interface UserCompanySetup {
   voice: string;
   language: string;
   completed: boolean;
-  updatedAt: string;
+  updatedAt?: string;
 }
 
 const LOCAL_USERS_KEY = "vaani_users_mock";
