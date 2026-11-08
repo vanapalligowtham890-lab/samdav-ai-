@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: vaani-recap
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: GNANI_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: LLM_API_KEY
+        sync: false
+      - key: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+        value: gnani-e666b
+      - key: NEXT_PUBLIC_FIREBASE_DATABASE_URL
+        value: https://gnani-e666b-default-rtdb.europe-west1.firebasedatabase.app
+      - key: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+        value: gnani-e666b.firebaseapp.com
