@@ -1,4 +1,4 @@
-# Vaani Recap (వాణి రీక్యాప్)
+# Samvad AI (సంవాద్ AI)
 ### Autonomous Multilingual Outbound Cold-Call AI Agent for Indian Small Businesses
 
 > **Built for the Gnani AI Great Indian AI Internship Challenge**  
@@ -12,7 +12,7 @@
 
 Over 63 million Indian small businesses (dental clinics, coaching academies, real estate agencies, retail boutiques, auto dealers) lose high-value prospects the moment a phone call ends. They struggle to scale cold calling due to language barriers and high telecaller costs.
 
-**Vaani Recap** solves this with an end-to-end voice AI sales agent:
+**Samvad AI** solves this with an end-to-end voice AI sales agent:
 1. **Excel Cold-Call Upload & Autonomous Dialing:** Upload contact lists (.xlsx/.csv) or click *Dial Next Lead*. The AI agent dials leads using your **verified forwarding number (caller ID)** and conducts natural outbound sales conversations in the prospect's native dialect.
 2. **10 Indian Language Modes:** Full native and code-mixed fluency across **Telugu+English (High-English)**, **Pure Telugu**, **Hindi+English (Hinglish)**, **Pure Hindi**, **Indian English**, **Tamil**, **Marathi**, **Kannada**, **Bengali**, and **Gujarati**.
 3. **Live Dashboard Operational Metrics:** Instant real-time tracking of:

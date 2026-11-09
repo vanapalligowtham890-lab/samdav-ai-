@@ -46,12 +46,12 @@ function ForgotPasswordForm() {
               <div className="w-9 h-9 rounded-lg bg-surface border border-border/80 p-0.5 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform overflow-hidden">
                 <img
                   src="/logo.png"
-                  alt="Vaani Recap"
+                  alt="Samvad AI"
                   className="w-full h-full object-contain"
                 />
               </div>
               <span className="font-heading text-2xl font-bold tracking-tight text-ink">
-                Vaani Recap
+                Samvad AI
               </span>
             </Link>
             <h1 className="text-2xl font-heading text-ink">Reset password</h1>

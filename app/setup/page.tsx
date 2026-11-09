@@ -105,7 +105,7 @@ export default function SetupPage() {
     return (
       <div className="min-h-screen bg-paper flex flex-col items-center justify-center space-y-3">
         <div className="w-10 h-10 rounded-lg bg-surface border border-border/80 p-1 flex items-center justify-center shadow-xs animate-pulse">
-          <img src="/logo.png" alt="Vaani Recap" className="w-full h-full object-contain" />
+          <img src="/logo.png" alt="Samvad AI" className="w-full h-full object-contain" />
         </div>
         <p className="text-xs text-muted font-medium">Loading setup session...</p>
       </div>

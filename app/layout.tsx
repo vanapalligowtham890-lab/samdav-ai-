@@ -15,8 +15,8 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Vaani Recap | Telugu & Hinglish Call-to-Lead Assistant",
-  description: "Small business sales call summaries powered by Gnani Prisma & Timbre",
+  title: "Samvad AI | Telugu & Regional Call-to-Lead Assistant",
+  description: "Autonomous regional sales dialogue and audio briefings powered by Gnani Prisma & Timbre",
   icons: {
     icon: [
       { url: "/logo.png", type: "image/png" },

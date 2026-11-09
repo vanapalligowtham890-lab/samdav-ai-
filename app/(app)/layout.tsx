@@ -65,7 +65,7 @@ export default function AppLayout({
     return (
       <div className="min-h-screen bg-paper flex flex-col items-center justify-center space-y-3">
         <div className="w-10 h-10 rounded-lg bg-surface border border-border/80 p-1 flex items-center justify-center shadow-xs animate-pulse">
-          <img src="/logo.png" alt="Vaani Recap" className="w-full h-full object-contain" />
+          <img src="/logo.png" alt="Samvad AI" className="w-full h-full object-contain" />
         </div>
         <p className="text-xs text-muted font-medium">Verifying user authorization...</p>
       </div>
@@ -107,13 +107,13 @@ export default function AppLayout({
               <div className="w-8 h-8 rounded-lg bg-surface border border-border/80 p-0.5 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform shrink-0 overflow-hidden">
                 <img
                   src="/logo.png"
-                  alt="Vaani Recap"
+                  alt="Samvad AI"
                   className="w-full h-full object-contain"
                 />
               </div>
               <div className="flex flex-col justify-center shrink-0">
                 <span className="font-heading text-base sm:text-lg font-bold tracking-tight text-ink leading-tight whitespace-nowrap">
-                  Vaani Recap
+                  Samvad AI
                 </span>
                 <span className="text-[10px] text-muted font-medium tracking-wide whitespace-nowrap">
                   Gnani Prisma &amp; Timbre
@@ -228,7 +228,7 @@ export default function AppLayout({
       <footer className="border-t border-border py-6 text-xs text-muted">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p>
-            Vaani Recap · AI Outbound Cold Call Agent · Gnani Prisma STT &amp; Timbre TTS.
+            Samvad AI · Multilingual Sales Call Assistant · Gnani Prisma STT &amp; Timbre TTS.
           </p>
           <div className="flex items-center gap-4">
             <Link href="/design-check" className="hover:text-ink transition-colors underline-offset-2 hover:underline">

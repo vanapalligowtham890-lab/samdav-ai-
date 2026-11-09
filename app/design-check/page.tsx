@@ -14,7 +14,7 @@ export default function DesignCheckPage() {
       <header className="border-b border-border pb-6 flex flex-col md:flex-row md:items-baseline md:justify-between gap-4">
         <div>
           <span className="text-xs uppercase tracking-widest text-muted font-medium">Design System Verification</span>
-          <h1 className="text-3xl md:text-4xl font-heading text-ink mt-1">Vaani Recap design check</h1>
+          <h1 className="text-3xl md:text-4xl font-heading text-ink mt-1">Samvad AI design check</h1>
           <p className="text-muted mt-2 text-base max-w-xl">
             Human, tactile, small-studio aesthetic. No gradients, no glassmorphism, one terracotta accent, and first-class Telugu typography.
           </p>

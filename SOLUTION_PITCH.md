@@ -1,4 +1,4 @@
-# Vaani Recap — 1-Page Solution Pitch
+# Samvad AI — 1-Page Solution Pitch
 
 > **Challenge:** Gnani AI Great Indian AI Internship Challenge  
 > **Solution:** Autonomous Multilingual AI Cold-Calling & Lead Briefing Agent for Indian SMBs  
@@ -11,8 +11,8 @@ Over 63 million Indian small businesses (clinics, coaching institutes, real esta
 
 ---
 
-### The Solution: Vaani Recap
-**Vaani Recap** is an autonomous, multilingual voice AI sales engine designed specifically for Indian small businesses. It handles end-to-end phone outreach and conversion in three seamless steps:
+### The Solution: Samvad AI
+**Samvad AI** is an autonomous, multilingual voice AI sales engine designed specifically for Indian small businesses. It handles end-to-end phone outreach and conversion in three seamless steps:
 
 1. **Autonomous Dialing & Outreach with Verified Caller ID:**
    - Business owners upload their prospect list via an Excel sheet or CSV.

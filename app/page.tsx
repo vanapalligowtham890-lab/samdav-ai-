@@ -93,13 +93,13 @@ export default function LandingPage() {
             <div className="w-8 h-8 rounded-lg bg-surface border border-border/80 p-0.5 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform shrink-0 overflow-hidden">
               <img
                 src="/logo.png"
-                alt="Vaani Recap"
+                alt="Samvad AI"
                 className="w-full h-full object-contain"
               />
             </div>
             <div className="shrink-0 flex flex-col justify-center">
               <span className="font-heading text-base sm:text-lg font-bold tracking-tight text-ink leading-tight whitespace-nowrap">
-                Vaani Recap
+                Samvad AI
               </span>
               <span className="text-[10px] text-muted font-medium tracking-wide whitespace-nowrap">
                 Gnani Prisma &amp; Timbre
@@ -398,7 +398,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="space-y-1 text-center sm:text-left">
             <p className="font-medium text-ink">
-              Vaani Recap (వాణి రీక్యాప్) · AI Cold Call Agent &amp; Sales Dashboard
+              Samvad AI (సంవాద్ AI) · Multilingual Sales Call Assistant &amp; Dashboard
             </p>
             <p className="text-[11px] text-muted">
               Built with Gnani Prisma (STT), Gnani Timbre (TTS), SQLite WAL Cache, and Firebase Realtime Database.
