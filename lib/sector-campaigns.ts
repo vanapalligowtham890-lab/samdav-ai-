@@ -553,7 +553,9 @@ export async function seedSectorCampaign(
     }));
   }
 
-  // 2. Synthesize authentic full call speech using the user's SELECTED VOICE & LANGUAGE
+  // 2. Synthesize authentic full call speech for the first featured lead
+  // Additional leads synthesize on-demand via /api/call-audio to avoid 429 concurrency bottlenecks
+  let upfrontSynthesized = 0;
   for (let i = 0; i < rawProspects.length; i++) {
     const p = rawProspects[i];
     // Strip any legacy demo audio paths so stale voices are never played
@@ -561,7 +563,7 @@ export async function seedSectorCampaign(
       p.audio_url = "";
     }
 
-    if ((p.call_status === "closed" || p.call_status === "ongoing") && !p.audio_url) {
+    if ((p.call_status === "closed" || p.call_status === "ongoing") && !p.audio_url && upfrontSynthesized < 1) {
       try {
         const textToSpeak = extractFullCallSpeechText(p, voiceDef.name, companyName, activeScript);
         const synthRes = await synthesizeDialogueAudio({
@@ -572,6 +574,7 @@ export async function seedSectorCampaign(
           languageCode: timbreLanguage,
         });
         p.audio_url = synthRes.audioUrl;
+        upfrontSynthesized++;
       } catch (synthErr) {
         console.warn(`Upfront full synthesis for ${p.name} failed:`, synthErr);
         p.audio_url = "";
@@ -673,6 +676,7 @@ export function syncCampaignCallsToDb(companyName?: string, languageCode?: strin
 
     for (const p of prospects) {
       const cleanName = cleanCustomerName(p.name);
+      const resolvedAudioUrl = p.audio_url || `/api/call-audio?prospectId=${encodeURIComponent(p.id)}`;
       const filename = p.audio_url ? p.audio_url.split("/").pop() || `${p.id}.wav` : `${p.id}.wav`;
       const filePath = p.audio_url ? path.join(process.cwd(), "public", p.audio_url.replace(/^\//, "")) : "";
 
@@ -687,7 +691,7 @@ export function syncCampaignCallsToDb(companyName?: string, languageCode?: strin
         p.call_status === "closed" ? "completed" : "in_progress",
         p.transcript || "",
         lang,
-        p.audio_url || ""
+        resolvedAudioUrl
       );
 
       insertLead.run(
@@ -703,7 +707,7 @@ export function syncCampaignCallsToDb(companyName?: string, languageCode?: strin
         p.key_quote || "",
         `నమస్కారం ${cleanName} గారు, ${company} నుండి మా సంభాషణ వివరాలు పంపిస్తున్నాము. ధన్యవాదాలు!`,
         p.outcome === "won" ? "qualified" : "contacted",
-        p.audio_url || ""
+        resolvedAudioUrl
       );
     }
   } catch (err) {
