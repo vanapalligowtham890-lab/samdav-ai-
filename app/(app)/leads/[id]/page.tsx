@@ -111,11 +111,26 @@ export default function LeadDetailPage({
   };
 
   const togglePlayAudio = async () => {
-    if (isPlaying && audioRef.current) {
-      audioRef.current.pause();
+    if (isPlaying) {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = "";
+        audioRef.current.onended = null;
+        audioRef.current.onerror = null;
+        audioRef.current = null;
+      }
       setIsPlaying(false);
       return;
     }
+
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = "";
+      audioRef.current.onended = null;
+      audioRef.current.onerror = null;
+      audioRef.current = null;
+    }
+    setIsPlaying(false);
 
     let audioUrl = lead?.audio_url;
     if (!audioUrl && lead?.filename && !lead.filename.startsWith("demo_call")) {
@@ -147,34 +162,26 @@ export default function LeadDetailPage({
 
     const targetUrl = audioUrl || `/api/call-audio?prospectId=${encodeURIComponent(lead?.call_id || lead?.id || "")}`;
 
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
-
     const audio = new Audio(targetUrl);
     audioRef.current = audio;
-    audio.onended = () => setIsPlaying(false);
-    audio.onerror = async () => {
-      console.warn("Direct lead audio load failed, streaming from /api/call-audio...");
-      try {
-        const streamUrl = `/api/call-audio?prospectId=${encodeURIComponent(lead?.call_id || lead?.id || "")}&t=${Date.now()}`;
-        const fallback = new Audio(streamUrl);
-        audioRef.current = fallback;
-        fallback.onended = () => setIsPlaying(false);
-        fallback.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
-      } catch {
-        setIsPlaying(false);
-      }
+    audio.onended = () => {
+      setIsPlaying(false);
+      audioRef.current = null;
+    };
+    audio.onerror = () => {
+      console.warn("Audio playback error for lead");
+      setIsPlaying(false);
+      audioRef.current = null;
     };
 
-    audio.play().then(() => setIsPlaying(true)).catch((e) => {
-      console.warn("Audio play prevented, retrying stream:", e);
-      const streamUrl = `/api/call-audio?prospectId=${encodeURIComponent(lead?.call_id || lead?.id || "")}&t=${Date.now()}`;
-      const fallback = new Audio(streamUrl);
-      audioRef.current = fallback;
-      fallback.onended = () => setIsPlaying(false);
-      fallback.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
-    });
+    try {
+      await audio.play();
+      setIsPlaying(true);
+    } catch (e) {
+      console.warn("Audio play prevented or interrupted:", e);
+      setIsPlaying(false);
+      audioRef.current = null;
+    }
   };
 
   if (loading) {
