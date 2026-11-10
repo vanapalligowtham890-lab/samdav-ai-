@@ -44,10 +44,10 @@ export default function SetupPage() {
   const router = useRouter();
   const { user, setup, updateSetup, loading: authLoading, isFirebaseConnected } = useAuth();
 
-  const [companyName, setCompanyName] = useState(setup?.companyName || "Ishiva digital");
-  const [sectorChoice, setSectorChoice] = useState(setup?.companyType || "Digital Marketing & Agency");
+  const [companyName, setCompanyName] = useState(setup?.companyName || "Aditya University");
+  const [sectorChoice, setSectorChoice] = useState(setup?.companyType || "Aditya University - B.Tech Admissions & Parent Desk");
   const [customSector, setCustomSector] = useState("");
-  const [forwardingNumber, setForwardingNumber] = useState(setup?.forwardingNumber || "+91 98765 43210");
+  const [forwardingNumber, setForwardingNumber] = useState(setup?.forwardingNumber || "+91 99897 76543");
   const [selectedVoice, setSelectedVoice] = useState(setup?.voice || "Shivani");
   const [selectedLanguage, setSelectedLanguage] = useState(setup?.language || "te-en");
   const [saving, setSaving] = useState(false);
@@ -294,7 +294,7 @@ export default function SetupPage() {
                     required
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
-                    placeholder="e.g. Ishiva digital"
+                    placeholder="e.g. Aditya University"
                     className="w-full bg-paper border border-border rounded-md px-3 py-2 text-sm text-ink focus:outline-none focus:border-accent"
                   />
                 </div>

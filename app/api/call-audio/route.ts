@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const company = (db.prepare("SELECT value FROM settings WHERE key = 'business_name'").get() as any)?.value || "Ishiva digital";
+    const company = (db.prepare("SELECT value FROM settings WHERE key = 'business_name'").get() as any)?.value || "Aditya University";
     const savedTimbreLang = (db.prepare("SELECT value FROM settings WHERE key = 'timbre_language'").get() as any)?.value;
     const synthLang = savedTimbreLang || voiceDef.language || "te-IN";
 
@@ -124,7 +124,7 @@ export async function GET(req: NextRequest) {
     const savedVoice = (db.prepare("SELECT value FROM settings WHERE key = 'voice'").get() as any)?.value || "Shivani";
     const chosenVoice = overrideVoice || savedVoice;
     const voiceDef = ALL_VOICES.find(v => v.id.toLowerCase() === chosenVoice.toLowerCase()) || ALL_VOICES[0];
-    const company = (db.prepare("SELECT value FROM settings WHERE key = 'business_name'").get() as any)?.value || "Our Business";
+    const company = (db.prepare("SELECT value FROM settings WHERE key = 'business_name'").get() as any)?.value || "Aditya University";
 
     let prospect: any = db.prepare("SELECT * FROM cold_call_campaigns WHERE id = ?").get(prospectId);
     if (!prospect) {

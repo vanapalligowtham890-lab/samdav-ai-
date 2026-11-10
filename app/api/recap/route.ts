@@ -189,7 +189,7 @@ export async function POST(req: NextRequest) {
 export async function GET() {
   try {
     const voiceSetting = (db.prepare("SELECT value FROM settings WHERE key = 'voice'").get() as any)?.value || "Shivani";
-    const businessName = (db.prepare("SELECT value FROM settings WHERE key = 'business_name'").get() as any)?.value || "Ishiva digital";
+    const businessName = (db.prepare("SELECT value FROM settings WHERE key = 'business_name'").get() as any)?.value || "Aditya University";
 
     // Return latest recap matching current voice and business
     const latestRecap = db.prepare(`

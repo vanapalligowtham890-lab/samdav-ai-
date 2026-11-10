@@ -263,9 +263,9 @@ export default function CallsPage() {
         <div className="border-b border-border pb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
             <span className="text-xs uppercase tracking-widest text-muted font-medium block mb-1">
-              Recorded Sales Conversations
+              Aditya University · Admissions &amp; Parent Desk
             </span>
-            <h1 className="text-3xl font-heading text-ink">Calls &amp; transcripts</h1>
+            <h1 className="text-3xl font-heading text-ink">Parent Calls &amp; Transcripts</h1>
           </div>
           <span className="text-xs text-muted">
             Transcribed using Gnani Prisma v3.0 (Telugu + Hinglish)
@@ -307,7 +307,7 @@ export default function CallsPage() {
 
             <div>
               <p className="font-heading text-lg text-ink">
-                Drop your recorded sales call here
+                Drop recorded parent counseling call here
               </p>
               <p className="text-xs text-muted mt-1">
                 Supports WAV, MP3, M4A up to 30 seconds (longer calls auto-chunked by ffmpeg).
@@ -340,7 +340,7 @@ export default function CallsPage() {
                 ) : (
                   <>
                     <Mic className="w-3.5 h-3.5 text-accent" strokeWidth={1.5} />
-                    Test Live Call with Your Mic
+                    Test Live Admissions Call (Mic)
                   </>
                 )}
               </button>
@@ -349,7 +349,7 @@ export default function CallsPage() {
             {/* Quick sample pickers */}
             <div className="pt-4 border-t border-border/80">
               <span className="text-[11px] text-muted block mb-2 font-medium">
-                Or pick a realistic Telugu small-business sample to test:
+                Or select a parent counseling call to verify:
               </span>
               <div className="flex flex-wrap justify-center gap-1.5">
                 {SYNTHETIC_CALLS.map((sample) => (
@@ -359,7 +359,7 @@ export default function CallsPage() {
                     disabled={uploading}
                     className="text-[11px] bg-paper border border-border hover:border-accent px-2.5 py-1 rounded text-ink transition-colors"
                   >
-                    {sample.category}
+                    {sample.customerName.split(" ")[0]} ({sample.lead.need.slice(0, 28)}...)
                   </button>
                 ))}
               </div>

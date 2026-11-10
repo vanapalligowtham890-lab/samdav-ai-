@@ -9,8 +9,8 @@ import { seedSectorCampaign, syncCampaignCallsToDb } from "@/lib/sector-campaign
 
 export async function POST(req: NextRequest) {
   try {
-    const businessName = (db.prepare("SELECT value FROM settings WHERE key = 'business_name'").get() as any)?.value || "Ishiva digital";
-    const businessType = (db.prepare("SELECT value FROM settings WHERE key = 'business_type'").get() as any)?.value || "Digital Marketing & Agency";
+    const businessName = (db.prepare("SELECT value FROM settings WHERE key = 'business_name'").get() as any)?.value || "Aditya University";
+    const businessType = (db.prepare("SELECT value FROM settings WHERE key = 'business_type'").get() as any)?.value || "Aditya University - B.Tech Admissions & Parent Desk";
     const voice = (db.prepare("SELECT value FROM settings WHERE key = 'voice'").get() as any)?.value || "Shivani";
     const language = (db.prepare("SELECT value FROM settings WHERE key = 'language'").get() as any)?.value || "te-en";
 

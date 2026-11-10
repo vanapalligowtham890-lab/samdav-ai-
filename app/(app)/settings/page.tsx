@@ -41,10 +41,10 @@ export default function SettingsPage() {
 
   const [language, setLanguage] = useState("te-en");
   const [voice, setVoice] = useState("Shivani");
-  const [forwardingNumber, setForwardingNumber] = useState("+91 98765 43210");
-  const [businessType, setBusinessType] = useState("Digital Marketing & Agency");
+  const [forwardingNumber, setForwardingNumber] = useState("+91 99897 76543");
+  const [businessType, setBusinessType] = useState("Aditya University - B.Tech Admissions & Parent Desk");
   const [customSector, setCustomSector] = useState("");
-  const [companyName, setCompanyName] = useState("Ishiva digital");
+  const [companyName, setCompanyName] = useState("Aditya University");
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);

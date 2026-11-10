@@ -111,17 +111,26 @@ export function parseDialogueTurns(
       const isExplicitCustomer = (
         lower.startsWith("customer:") ||
         lower.startsWith("prospect:") ||
+        lower.startsWith("parent:") ||
+        lower.startsWith("father:") ||
+        lower.startsWith("mother:") ||
         lower.startsWith("client:") ||
         lower.startsWith("lead:") ||
         lower.startsWith("user:") ||
+        lower.startsWith("avinash:") ||
+        lower.startsWith("prakash:") ||
         (customerName && lower.startsWith(customerName.toLowerCase() + ":"))
       );
 
       const isExplicitAgent = (
         lower.startsWith("agent:") ||
+        lower.startsWith("counselor:") ||
+        lower.startsWith("admissions:") ||
+        lower.startsWith("desk:") ||
         lower.startsWith("caller:") ||
         lower.startsWith("representative:") ||
         lower.startsWith("executive:") ||
+        lower.startsWith("shivani:") ||
         (agentName && lower.startsWith(agentName.toLowerCase() + ":"))
       );
 
@@ -336,7 +345,7 @@ export async function synthesizeDialogueAudio(
 
   // 3. Synthesize each turn sequentially (throttled to respect Gnani concurrency)
   const pcmChunks: Buffer[] = [];
-  const pauseBetweenTurns = Buffer.alloc(24000 * 2 * 0.28); // 280ms natural pause between speakers
+  const pauseBetweenTurns = Buffer.alloc(Math.floor(24000 * 2 * 0.42)); // 420ms natural phone conversation pause
 
   for (let i = 0; i < turns.length; i++) {
     const turn = turns[i];
@@ -359,6 +368,9 @@ export async function synthesizeDialogueAudio(
         const turnWavBuf = fs.readFileSync(turnDiskPath);
         const pcm = extractPcmBytes(turnWavBuf);
         if (pcm.length > 0) {
+          if (pcmChunks.length > 0) {
+            pcmChunks.push(pauseBetweenTurns); // Insert natural conversational pause between speakers
+          }
           pcmChunks.push(pcm);
         }
       }
