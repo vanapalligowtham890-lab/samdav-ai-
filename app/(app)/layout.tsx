@@ -114,7 +114,7 @@ export default function AppLayout({
                   {isAdityaUser ? "Aditya University" : "Samvad AI"}
                 </span>
                 <span className="text-[10px] text-muted font-medium tracking-wide whitespace-nowrap">
-                  {isAdityaUser ? "24/7 B.Tech Admissions Desk" : "Gnani Prisma &amp; Timbre"}
+                  {isAdityaUser ? "B.Tech Admissions Desk" : "Gnani Prisma &amp; Timbre"}
                 </span>
               </div>
             </Link>

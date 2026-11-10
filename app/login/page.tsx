@@ -158,14 +158,14 @@ function LoginForm() {
               </div>
             )}
 
-            {/* Aditya University 24/7 Admissions Desk Credentials Helper */}
+            {/* Aditya University Admissions Desk Credentials Helper */}
             <div className="bg-secondary/10 border border-secondary/30 rounded-lg p-3.5 text-xs space-y-2">
               <div className="flex items-center justify-between">
                 <span className="font-semibold text-secondary flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5" /> Aditya University Admissions Desk
                 </span>
                 <span className="text-[10px] bg-secondary/20 text-secondary px-2 py-0.5 rounded font-mono font-bold">
-                  B.Tech 24/7 Desk
+                  B.Tech Admissions Desk
                 </span>
               </div>
               <div className="font-mono text-[11px] text-ink/80 space-y-0.5 bg-paper/80 p-2 rounded border border-border/60">

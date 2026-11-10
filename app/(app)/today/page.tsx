@@ -504,7 +504,7 @@ export default function TodayDashboardPage() {
               </button>
             </div>
             <h1 className="text-3xl sm:text-4xl font-heading text-ink">
-              {isAditya ? "Aditya University · 24/7 AI Admissions Desk" : `${companyName} · AI Cold Call Agent`}
+              {isAditya ? "Aditya University · AI Admissions Desk" : `${companyName} · AI Cold Call Agent`}
             </h1>
             <p className="text-xs text-muted mt-1">
               {isAditya ? (
@@ -731,7 +731,7 @@ export default function TodayDashboardPage() {
                   </span>
                   <span className="inline-flex items-center gap-1.5 text-xs text-secondary font-semibold">
                     <span className="w-2 h-2 rounded-full bg-secondary animate-ping" />
-                    Live &amp; Activating 24/7
+                    Live &amp; Actively Counseling
                   </span>
                   <span className="text-border">·</span>
                   <span className="text-xs font-mono text-muted">
@@ -739,7 +739,7 @@ export default function TodayDashboardPage() {
                   </span>
                 </div>
                 <h2 className="font-heading text-xl sm:text-2xl text-ink font-bold mt-1">
-                  Aditya University · 24/7 B.Tech Admissions &amp; Parent Desk Officer
+                  Aditya University · B.Tech Admissions &amp; Parent Desk Officer
                 </h2>
                 <p className="text-xs text-muted mt-0.5">
                   Autonomous outreach and parent advisory assistant for 4-year B.Tech programs (CSE, AI &amp; ML, Data Science, ECE, Mechanical, IT)
@@ -771,7 +771,7 @@ export default function TodayDashboardPage() {
                 Aditya Admissions Officer
               </p>
               <p className="text-[11px] text-muted">
-                Status: <strong className="text-secondary font-semibold">Activating 24/7 for Parents</strong>
+                Status: <strong className="text-secondary font-semibold">Live &amp; Active for Parents</strong>
               </p>
             </div>
 
@@ -1220,7 +1220,7 @@ export default function TodayDashboardPage() {
                 <strong className="text-ink">Hostels:</strong> On-Campus AC &amp; Non-AC (Separate Boys &amp; Girls)
               </p>
               <p>
-                <strong className="text-ink">Admissions Helpline:</strong> +91 99897 76543 (24/7 Available)
+                <strong className="text-ink">Admissions Helpline:</strong> +91 99897 76543 (Always Available)
               </p>
             </div>
           </div>

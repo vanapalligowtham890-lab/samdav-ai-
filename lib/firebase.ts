@@ -131,7 +131,7 @@ export async function signUpUser(email: string, pass: string): Promise<{ user: a
       college: "Aditya University",
       course: "4-Year B.Tech Admissions",
       campus: "Surampalem, AP",
-      role: "24/7 Admissions Officer",
+      role: "Admissions Officer",
       createdAt: new Date().toISOString(),
     });
     syncRealtimeDb(`users/${adityaUser.uid}/setup`, ADITYA_UNIVERSITY_DEFAULT_SETUP);
@@ -213,7 +213,7 @@ export async function loginUser(email: string, pass: string): Promise<any> {
       college: "Aditya University",
       course: "4-Year B.Tech Admissions",
       campus: "Surampalem, AP",
-      role: "24/7 Admissions Officer",
+      role: "Admissions Officer",
       updatedAt: new Date().toISOString(),
     });
 
