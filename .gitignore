@@ -44,9 +44,13 @@ vaani.db
 # dynamic generated audio
 public/audio/recap_*.wav
 public/audio/demo_*.wav
+public/audio/call_dialogue_*.wav
 
-# temporary scratch
+# temporary scratch & recordings
 scratch/
+.sec_temp/
+.smooth_video_temp/
+data/uploads/
 
 # vercel
 .vercel

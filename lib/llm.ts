@@ -191,3 +191,66 @@ function heuristicExtract(transcript: string): LeadExtractionResult {
   };
 }
 
+export interface AgentTurnParams {
+  companyName: string;
+  businessType: string;
+  agentVoiceName: string;
+  language: string;
+  conversationHistory: { speaker: "agent" | "customer"; text: string }[];
+  customerSpeechText: string;
+}
+
+/**
+ * Generates an intelligent, conversational spoken sales response from the AI agent during a live call.
+ */
+export async function generateLiveAgentTurnReply(params: AgentTurnParams): Promise<string> {
+  const apiKey = process.env.GEMINI_API_KEY || process.env.LLM_API_KEY;
+  const { companyName, businessType, agentVoiceName, language, conversationHistory, customerSpeechText } = params;
+
+  if (!apiKey || apiKey.includes("your_")) {
+    return `ఖచ్చితంగా అండి! ${companyName} నుండి మీ వివరాలు నోట్ చేసుకున్నాము. రేపు ఉదయం 11 గంటలకు పూర్తి వివరాలతో కాల్ చేయమంటారా?`;
+  }
+
+  const systemInstruction = `You are ${agentVoiceName}, an empathetic and articulate AI outbound sales executive for ${companyName} (${businessType}).
+You are speaking on a live phone call with a customer.
+Language mode: ${language} (respond naturally in the customer's language/dialect: Telugu, Hinglish, or English).
+Rules:
+1. Speak concisely in 1 to 2 spoken sentences (under 30 words total).
+2. Answer the customer's question directly (pricing, timing, appointment, offers).
+3. If they show interest, guide them towards confirming an appointment, plot visit, or WhatsApp proposal.
+4. Do NOT use bullet points, asterisks, stage directions, or markdown. Output purely natural spoken conversational words.`;
+
+  const conversationText = conversationHistory
+    .map(t => `${t.speaker === "agent" ? agentVoiceName : "Customer"}: "${t.text}"`)
+    .join("\n");
+
+  const prompt = `${conversationText}\nCustomer: "${customerSpeechText}"\n${agentVoiceName}:`;
+
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    const payload = {
+      contents: [{ role: "user", parts: [{ text: `${systemInstruction}\n\n${prompt}` }] }],
+      generationConfig: {
+        maxOutputTokens: 100,
+        temperature: 0.3,
+      },
+    };
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+      if (reply) {
+        return reply.replace(/[*_#`"]/g, "").replace(/\n/g, " ").trim();
+      }
+    }
+  } catch (err) {
+    console.warn("Live agent turn Gemini generation failed:", err);
+  }
+
+  return `చాలా సంతోషం అండి! మీ వివరాలు నోట్ చేసుకున్నాము. పూర్తి వివరాలు మా ఎగ్జిక్యూటివ్ వాట్సాప్ ద్వారా పంపిస్తారు.`;
+}
+

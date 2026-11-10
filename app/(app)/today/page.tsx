@@ -32,6 +32,7 @@ import { useAuth } from "@/lib/auth-context";
 import { DEFAULT_VIRTUAL_SCRIPTS, VirtualScript } from "@/lib/virtual-script";
 import { ALL_VOICES, VoiceDefinition } from "@/lib/voice-catalog";
 import { getLanguageMode } from "@/lib/languages";
+import { LiveCallModal } from "@/components/live-call-modal";
 
 interface RecapData {
   spoken_text_telugu: string;
@@ -73,6 +74,8 @@ export default function TodayDashboardPage() {
   // Excel & Virtual Script Modals
   const [excelModalOpen, setExcelModalOpen] = useState(false);
   const [scriptModalOpen, setScriptModalOpen] = useState(false);
+  const [liveCallModalOpen, setLiveCallModalOpen] = useState(false);
+  const [liveCallTargetPhone, setLiveCallTargetPhone] = useState("+91 98490 22334");
   const [uploadingExcel, setUploadingExcel] = useState(false);
   const [activeScript, setActiveScript] = useState<VirtualScript>(
     DEFAULT_VIRTUAL_SCRIPTS.telugu_high_english || DEFAULT_VIRTUAL_SCRIPTS.telugu_general
@@ -431,6 +434,18 @@ export default function TodayDashboardPage() {
               className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 bg-surface text-ink border border-border hover:border-accent px-3 py-2 rounded-lg text-xs font-medium transition-colors paper-shadow"
             >
               <FileSpreadsheet className="w-3.5 h-3.5 text-accent" strokeWidth={1.5} /> Upload Excel Sheet
+            </button>
+
+            <button
+              onClick={() => {
+                setLiveCallTargetPhone(forwardingNumber || "+91 98490 22334");
+                setLiveCallModalOpen(true);
+              }}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 bg-secondary text-surface px-4 py-2 rounded-lg text-xs font-semibold hover:opacity-90 transition-opacity shadow-xs border border-secondary"
+              title="Test talking live with the AI sales agent with your microphone"
+            >
+              <PhoneCall className="w-3.5 h-3.5 animate-pulse" strokeWidth={2} />
+              <span>Live AI Call (Microphone)</span>
             </button>
 
             <button
@@ -991,6 +1006,20 @@ export default function TodayDashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Live Interactive AI Phone Call Modal */}
+      <LiveCallModal
+        isOpen={liveCallModalOpen}
+        onClose={() => setLiveCallModalOpen(false)}
+        defaultPhone={liveCallTargetPhone}
+        agentVoiceName={currentVoiceObj.name}
+        companyName={companyName}
+        onCallSaved={() => {
+          fetchCampaignData();
+          setStatusMessage("Live call successfully saved to recordings & CRM leads!");
+          setTimeout(() => setStatusMessage(null), 4000);
+        }}
+      />
     </div>
   );
 }

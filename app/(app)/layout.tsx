@@ -13,9 +13,11 @@ import {
   PhoneForwarded, 
   LogOut, 
   LogIn,
-  Lock
+  Lock,
+  Phone
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { LiveCallModal } from "@/components/live-call-modal";
 
 export default function AppLayout({
   children,
@@ -27,6 +29,7 @@ export default function AppLayout({
   const { user, setup, logout, loading, isFirebaseConnected } = useAuth();
   const [seeding, setSeeding] = useState(false);
   const [seeded, setSeeded] = useState(false);
+  const [isLiveCallOpen, setIsLiveCallOpen] = useState(false);
 
   // Strict route protection: If not authenticated, redirect to /login immediately
   useEffect(() => {
@@ -173,6 +176,15 @@ export default function AppLayout({
             </div>
 
             <button
+              onClick={() => setIsLiveCallOpen(true)}
+              title="Speak live with the AI agent using your microphone"
+              className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border font-semibold bg-accent text-surface hover:opacity-95 shadow-xs transition-all shrink-0 whitespace-nowrap"
+            >
+              <Phone className="w-3.5 h-3.5 animate-pulse" strokeWidth={2} />
+              <span>Live Call AI</span>
+            </button>
+
+            <button
               onClick={handleSeedDemo}
               disabled={seeding || seeded}
               title="Loads realistic synthetic small-business calls instantly without waiting on live API"
@@ -243,6 +255,33 @@ export default function AppLayout({
           </div>
         </div>
       </footer>
+      {/* Floating Live Call Button */}
+      <div className="fixed bottom-6 right-6 z-40">
+        <button
+          onClick={() => setIsLiveCallOpen(true)}
+          className="flex items-center gap-2.5 bg-secondary text-surface px-4 py-3 rounded-full shadow-xl hover:opacity-95 hover:scale-105 active:scale-95 transition-all text-xs font-semibold group border-2 border-surface"
+          title="Interactive Live Voice Calling with AI Agent"
+        >
+          <div className="w-2.5 h-2.5 rounded-full bg-surface animate-ping" />
+          <Phone className="w-4 h-4" />
+          <span className="hidden sm:inline">Live Call AI Agent</span>
+        </button>
+      </div>
+
+      {/* Live Call Modal */}
+      <LiveCallModal
+        isOpen={isLiveCallOpen}
+        onClose={() => setIsLiveCallOpen(false)}
+        defaultPhone={setup?.forwardingNumber || "+91 98490 22334"}
+        agentVoiceName={setup?.voice || "Shivani"}
+        companyName={setup?.companyName || "Smile Dental Care"}
+        onCallSaved={() => {
+          // If on today or calls page, trigger reload or notification
+          if (pathname === "/today" || pathname === "/calls") {
+            window.location.reload();
+          }
+        }}
+      />
     </div>
   );
 }
