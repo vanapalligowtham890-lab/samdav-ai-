@@ -39,38 +39,67 @@ export default function LandingPage() {
 
   const handlePlayVoice = async (v: VoiceDefinition) => {
     if (isPlaying && selectedVoice.id === v.id) {
-      if (audioRef.current) audioRef.current.pause();
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = "";
+        audioRef.current = null;
+      }
       setIsPlaying(false);
       return;
     }
 
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = "";
+      audioRef.current = null;
+    }
+
     setSelectedVoice(v);
-    setLoadingAudio(true);
+
+    // Instant zero-latency pre-rendered voice playback
+    const staticUrl = `/audio/voice_${v.id.toLowerCase()}.wav`;
+    const audio = new Audio(staticUrl);
+    audioRef.current = audio;
+
+    audio.onended = () => {
+      setIsPlaying(false);
+      audioRef.current = null;
+    };
+
+    audio.onerror = async () => {
+      try {
+        setLoadingAudio(true);
+        const res = await fetch("/api/voice-preview", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            voice: v.id,
+            text: v.sampleText,
+            language: v.language,
+            model: v.model,
+          }),
+        });
+        const data = await res.json();
+        if (data.audioUrl) {
+          const fallbackAudio = new Audio(data.audioUrl);
+          audioRef.current = fallbackAudio;
+          fallbackAudio.onended = () => setIsPlaying(false);
+          await fallbackAudio.play();
+          setIsPlaying(true);
+        }
+      } catch (e) {
+        console.warn("Fallback preview error:", e);
+        setIsPlaying(false);
+      } finally {
+        setLoadingAudio(false);
+      }
+    };
 
     try {
-      const res = await fetch("/api/voice-preview", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          voice: v.id,
-          text: v.sampleText,
-          language: v.language,
-          model: v.model,
-        }),
-      });
-      const data = await res.json();
-      if (data.audioUrl) {
-        if (audioRef.current) audioRef.current.pause();
-        const audio = new Audio(data.audioUrl);
-        audioRef.current = audio;
-        audio.onended = () => setIsPlaying(false);
-        audio.play().catch(() => setIsPlaying(false));
-        setIsPlaying(true);
-      }
-    } catch (err) {
-      console.error("Preview play failed:", err);
-    } finally {
-      setLoadingAudio(false);
+      await audio.play();
+      setIsPlaying(true);
+    } catch {
+      setIsPlaying(false);
     }
   };
 

@@ -245,46 +245,21 @@ export default function TodayDashboardPage() {
     }
     setPlayingCallId(null);
 
-    let audioUrl = prospect.audio_url;
+    const targetUrl = prospect.audio_url || `/api/call-audio?prospectId=${encodeURIComponent(prospect.id)}&voice=${encodeURIComponent(voiceName)}`;
+    setLoadingAudioId(prospect.id);
 
-    // If no authentic audio exists or it's a legacy static demo file, synthesize it on-demand with the user's SELECTED VOICE!
-    if (!audioUrl || audioUrl.includes("demo_call") || audioUrl.includes("sample_recap")) {
-      try {
-        setLoadingAudioId(prospect.id);
-        const res = await fetch("/api/call-audio", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            prospectId: prospect.id,
-            voice: voiceName,
-          }),
-        });
-        const data = await res.json();
-        if (data.audioUrl) {
-          audioUrl = data.audioUrl;
-          // Update prospect in local state so subsequent plays are instant
-          setProspects((prev) =>
-            prev.map((p) => (p.id === prospect.id ? { ...p, audio_url: data.audioUrl } : p))
-          );
-        }
-      } catch (err) {
-        console.error("Failed to generate call audio:", err);
-      } finally {
-        setLoadingAudioId(null);
-      }
-    }
-
-    const targetUrl = audioUrl || `/api/call-audio?prospectId=${encodeURIComponent(prospect.id)}&voice=${encodeURIComponent(voiceName)}`;
     const audio = new Audio(targetUrl);
     audioCallRef.current = audio;
 
     audio.onended = () => {
       setPlayingCallId(null);
+      setLoadingAudioId(null);
       audioCallRef.current = null;
     };
     audio.onerror = () => {
       console.warn("Call audio error for prospect:", prospect.id);
       setPlayingCallId(null);
+      setLoadingAudioId(null);
       audioCallRef.current = null;
     };
 
@@ -294,7 +269,8 @@ export default function TodayDashboardPage() {
     } catch (e) {
       console.warn("Call audio play prevented or interrupted:", e);
       setPlayingCallId(null);
-      audioCallRef.current = null;
+    } finally {
+      setLoadingAudioId(null);
     }
   };
 

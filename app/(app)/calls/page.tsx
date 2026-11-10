@@ -12,7 +12,10 @@ import {
   CheckCircle2, 
   AlertCircle, 
   Sparkles, 
-  Clock 
+  Clock,
+  Loader2,
+  Mic,
+  Square 
 } from "lucide-react";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { TypingAnimation } from "@/components/ui/typing-animation";
@@ -42,10 +45,48 @@ export default function CallsPage() {
   const [uploading, setUploading] = useState(false);
   const [currentProcessingTranscript, setCurrentProcessingTranscript] = useState<string | null>(null);
   const [playingId, setPlayingId] = useState<string | null>(null);
+  const [loadingAudioId, setLoadingAudioId] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
 
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          audioChunksRef.current.push(e.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        const file = new File([audioBlob], `live_voice_call_${Date.now()}.webm`, { type: "audio/webm" });
+        await handleFileUpload(file);
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (err: any) {
+      alert("Microphone permission required to test live voice call recording.");
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current.stream.getTracks().forEach((t) => t.stop());
+      setIsRecording(false);
+    }
+  };
 
   const fetchCalls = async () => {
     try {
@@ -151,6 +192,7 @@ export default function CallsPage() {
         audioPlayerRef.current = null;
       }
       setPlayingId(null);
+      setLoadingAudioId(null);
       return;
     }
 
@@ -164,46 +206,22 @@ export default function CallsPage() {
     }
     setPlayingId(null);
 
-    let audioUrl = call.audio_url;
-    if (!audioUrl && call.filename && !call.filename.startsWith("demo_call")) {
-      audioUrl = `/audio/${call.filename}`;
-    }
+    const targetUrl = call.audio_url || (call.filename ? `/audio/${call.filename}` : `/api/call-audio?prospectId=${encodeURIComponent(call.id)}`);
+    setLoadingAudioId(call.id);
 
-    // Fallback on-demand synthesis if audio_url is missing
-    if (!audioUrl || audioUrl.includes("demo_call")) {
-      try {
-        const res = await fetch("/api/call-audio", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            prospectId: call.id,
-            transcript: call.transcript,
-            customerName: call.customer_name,
-            need: call.need,
-          }),
-        });
-        const data = await res.json();
-        if (data.audioUrl) {
-          audioUrl = data.audioUrl;
-          call.audio_url = data.audioUrl;
-        }
-      } catch (err) {
-        console.warn("Audio synthesis fallback failed:", err);
-      }
-    }
-
-    const targetUrl = audioUrl || `/api/call-audio?prospectId=${encodeURIComponent(call.id)}`;
     const audio = new Audio(targetUrl);
     audioPlayerRef.current = audio;
 
     audio.onended = () => {
       setPlayingId(null);
+      setLoadingAudioId(null);
       audioPlayerRef.current = null;
     };
 
     audio.onerror = () => {
       console.warn("Audio playback error for call:", call.id);
       setPlayingId(null);
+      setLoadingAudioId(null);
       audioPlayerRef.current = null;
     };
 
@@ -213,7 +231,8 @@ export default function CallsPage() {
     } catch (e) {
       console.warn("Audio play prevented or interrupted:", e);
       setPlayingId(null);
-      audioPlayerRef.current = null;
+    } finally {
+      setLoadingAudioId(null);
     }
   };
 
@@ -295,13 +314,35 @@ export default function CallsPage() {
               </p>
             </div>
 
-            <div className="flex items-center justify-center gap-3">
+            <div className="flex flex-wrap items-center justify-center gap-3">
               <button
                 onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
+                disabled={uploading || isRecording}
                 className="bg-accent text-surface px-4 py-2 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity"
               >
                 {uploading ? "Processing audio..." : "Select audio file"}
+              </button>
+
+              <button
+                onClick={isRecording ? stopRecording : startRecording}
+                disabled={uploading}
+                className={`px-4 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 shadow-xs ${
+                  isRecording
+                    ? "bg-red-600 text-white animate-pulse"
+                    : "bg-paper border border-border text-ink hover:border-accent"
+                }`}
+              >
+                {isRecording ? (
+                  <>
+                    <Square className="w-3.5 h-3.5 fill-current" />
+                    Stop &amp; Transcribe Live Call
+                  </>
+                ) : (
+                  <>
+                    <Mic className="w-3.5 h-3.5 text-accent" strokeWidth={1.5} />
+                    Test Live Call with Your Mic
+                  </>
+                )}
               </button>
             </div>
 
@@ -370,10 +411,13 @@ export default function CallsPage() {
                     <div className="flex items-center gap-3">
                       <button
                         onClick={() => togglePlayAudio(call)}
+                        disabled={loadingAudioId === call.id}
                         aria-label={isPlaying ? "Pause call audio" : "Play call audio"}
                         className="w-8 h-8 rounded-full bg-paper border border-border hover:border-accent text-accent flex items-center justify-center shrink-0 transition-colors"
                       >
-                        {isPlaying ? (
+                        {loadingAudioId === call.id ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-accent" />
+                        ) : isPlaying ? (
                           <Pause className="w-3.5 h-3.5 fill-current" strokeWidth={1.5} />
                         ) : (
                           <Play className="w-3.5 h-3.5 fill-current ml-0.5" strokeWidth={1.5} />

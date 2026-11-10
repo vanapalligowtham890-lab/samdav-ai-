@@ -136,31 +136,59 @@ export default function SetupPage() {
 
   const handlePlayPreview = async (v: VoiceDefinition) => {
     if (previewingVoice === v.id) {
-      if (audioRef.current) audioRef.current.pause();
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = "";
+        audioRef.current = null;
+      }
       setPreviewingVoice(null);
       return;
     }
 
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = "";
+      audioRef.current = null;
+    }
+
     setPreviewingVoice(v.id);
-    try {
-      const res = await fetch("/api/voice-preview", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          voice: v.id,
-          text: v.sampleText,
-          language: v.language,
-          model: v.model,
-        }),
-      });
-      const data = await res.json();
-      if (data.audioUrl) {
-        if (audioRef.current) audioRef.current.pause();
-        const audio = new Audio(data.audioUrl);
-        audioRef.current = audio;
-        audio.onended = () => setPreviewingVoice(null);
-        audio.play().catch(() => setPreviewingVoice(null));
+
+    // Instant zero-latency pre-rendered voice playback
+    const staticUrl = `/audio/voice_${v.id.toLowerCase()}.wav`;
+    const audio = new Audio(staticUrl);
+    audioRef.current = audio;
+
+    audio.onended = () => {
+      setPreviewingVoice(null);
+      audioRef.current = null;
+    };
+
+    audio.onerror = async () => {
+      try {
+        const res = await fetch("/api/voice-preview", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            voice: v.id,
+            text: v.sampleText,
+            language: v.language,
+            model: v.model,
+          }),
+        });
+        const data = await res.json();
+        if (data.audioUrl) {
+          const fallbackAudio = new Audio(data.audioUrl);
+          audioRef.current = fallbackAudio;
+          fallbackAudio.onended = () => setPreviewingVoice(null);
+          await fallbackAudio.play();
+        }
+      } catch {
+        setPreviewingVoice(null);
       }
+    };
+
+    try {
+      await audio.play();
     } catch {
       setPreviewingVoice(null);
     }
