@@ -35,42 +35,62 @@ RULES:
 - Output ONLY valid JSON matching this schema.`;
 
 /**
- * Calls Gemini REST API with structured JSON output.
+ * Calls Gemini REST API with structured JSON output with multi-model fallback on rate limits.
  */
 async function callGemini(apiKey: string, transcript: string): Promise<LeadExtractionResult> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const CANDIDATE_MODELS = [
+    "gemini-2.5-flash",
+    "gemini-1.5-flash",
+    "gemini-1.5-flash-8b",
+  ];
 
-  const payload = {
-    contents: [
-      {
-        role: "user",
-        parts: [{ text: `${EXTRACTION_SYSTEM_PROMPT}\n\nTRANSCRIPT:\n"""${transcript}"""` }],
-      },
-    ],
-    generationConfig: {
-      responseMimeType: "application/json",
-      temperature: 0.1,
-    },
-  };
+  let lastError: Error | null = null;
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+  for (const model of CANDIDATE_MODELS) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
-  if (!res.ok) {
-    const errorBody = await res.text();
-    throw new Error(`Gemini API error (${res.status}): ${errorBody}`);
+      const payload = {
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: `${EXTRACTION_SYSTEM_PROMPT}\n\nTRANSCRIPT:\n"""${transcript}"""` }],
+          },
+        ],
+        generationConfig: {
+          responseMimeType: "application/json",
+          temperature: 0.1,
+        },
+      };
+
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.status === 429) {
+        console.warn(`[Gemini Extraction] Model ${model} rate-limited (429). Trying fallback model...`);
+        continue;
+      }
+
+      if (!res.ok) {
+        const errorBody = await res.text();
+        throw new Error(`Gemini API error (${res.status}): ${errorBody}`);
+      }
+
+      const json = await res.json();
+      const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text) throw new Error("Empty candidate response from Gemini API");
+
+      return JSON.parse(text);
+    } catch (err: any) {
+      lastError = err;
+      console.warn(`[Gemini Extraction] Attempt with ${model} failed:`, err.message);
+    }
   }
 
-  const json = await res.json();
-  const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) {
-    throw new Error("Empty candidate response from Gemini API");
-  }
-
-  return JSON.parse(text);
+  throw lastError || new Error("All Gemini candidate models failed.");
 }
 
 /**
@@ -202,14 +222,12 @@ export interface AgentTurnParams {
 
 /**
  * Generates an intelligent, conversational spoken sales response from the AI agent during a live call.
+ * Uses a cascading pool of Gemini models (2.5-flash -> 1.5-flash -> 1.5-flash-8b) with instant contextual
+ * fallback on rate limits so the call NEVER pauses or stutters.
  */
 export async function generateLiveAgentTurnReply(params: AgentTurnParams): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY || process.env.LLM_API_KEY;
   const { companyName, businessType, agentVoiceName, language, conversationHistory, customerSpeechText } = params;
-
-  if (!apiKey || apiKey.includes("your_")) {
-    return `ఖచ్చితంగా అండి! ${companyName} నుండి మీ వివరాలు నోట్ చేసుకున్నాము. రేపు ఉదయం 11 గంటలకు పూర్తి వివరాలతో కాల్ చేయమంటారా?`;
-  }
 
   const systemInstruction = `You are ${agentVoiceName}, an empathetic and articulate AI outbound sales executive for ${companyName} (${businessType}).
 You are speaking on a live phone call with a customer.
@@ -226,31 +244,80 @@ Rules:
 
   const prompt = `${conversationText}\nCustomer: "${customerSpeechText}"\n${agentVoiceName}:`;
 
-  try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-    const payload = {
-      contents: [{ role: "user", parts: [{ text: `${systemInstruction}\n\n${prompt}` }] }],
-      generationConfig: {
-        maxOutputTokens: 100,
-        temperature: 0.3,
-      },
-    };
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-      if (reply) {
-        return reply.replace(/[*_#`"]/g, "").replace(/\n/g, " ").trim();
+  if (apiKey && !apiKey.includes("your_")) {
+    const CANDIDATE_MODELS = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-flash-8b"];
+
+    for (const model of CANDIDATE_MODELS) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+        const payload = {
+          contents: [{ role: "user", parts: [{ text: `${systemInstruction}\n\n${prompt}` }] }],
+          generationConfig: {
+            maxOutputTokens: 100,
+            temperature: 0.3,
+          },
+        };
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (res.status === 429) {
+          console.warn(`[Live Call Turn] Model ${model} rate-limited (429). Falling back to next model...`);
+          continue;
+        }
+
+        if (res.ok) {
+          const data = await res.json();
+          const reply = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+          if (reply) {
+            return reply.replace(/[*_#`"]/g, "").replace(/\n/g, " ").trim();
+          }
+        }
+      } catch (err) {
+        console.warn(`[Live Call Turn] Attempt with ${model} failed:`, err);
       }
     }
-  } catch (err) {
-    console.warn("Live agent turn Gemini generation failed:", err);
   }
 
-  return `చాలా సంతోషం అండి! మీ వివరాలు నోట్ చేసుకున్నాము. పూర్తి వివరాలు మా ఎగ్జిక్యూటివ్ వాట్సాప్ ద్వారా పంపిస్తారు.`;
+  // Instant contextual conversational fallback so customer is answered immediately without lag
+  return contextualSalesReply(customerSpeechText, companyName, agentVoiceName, language);
+}
+
+/**
+ * High-speed contextual conversational fallback for real-time live calling
+ */
+function contextualSalesReply(text: string, company: string, agent: string, language: string): string {
+  const t = text.toLowerCase();
+  const isTe = language.startsWith("te");
+
+  if (t.includes("cost") || t.includes("price") || t.includes("charge") || t.includes("ధర") || t.includes("ఖర్చు") || t.includes("fee") || t.includes("ప్యాకేజీ")) {
+    return isTe
+      ? `ఖచ్చితంగా అండి! మా దగ్గర ప్రారంభ ప్యాకేజీలు చాలా అందుబాటు ధరలలో ఉన్నాయి, ప్రత్యేక రాయితీ కూడా లభిస్తుంది. పూర్తి కొటేషన్ మీ వాట్సాప్‌కి పంపమంటారా?`
+      : `Certainly! Our starter packages are very affordable with special introductory discounts. Shall I send the complete price details to your WhatsApp?`;
+  }
+
+  if (t.includes("time") || t.includes("timing") || t.includes("appointment") || t.includes("schedule") || t.includes("సమయం") || t.includes("రేపు") || t.includes("ఉదయం") || t.includes("slots")) {
+    return isTe
+      ? `తప్పకుండా అండి! రేపు ఉదయం 11:00 గంటలకు లేదా సాయంత్రం 4:00 గంటలకు స్లాట్ ఖాళీగా ఉంది. మీకు ఏ సమయం వీలవుతుంది?`
+      : `Definitely! We have open slots tomorrow at 11:00 AM and 4:00 PM. Which time suits you best?`;
+  }
+
+  if (t.includes("location") || t.includes("address") || t.includes("where") || t.includes("ఎక్కడ") || t.includes("లొకేషన్") || t.includes("ఆఫీస్")) {
+    return isTe
+      ? `మా ప్రధాన కార్యాలయం నగరంలోనే అందుబాటులో ఉంది అండి. మీకు గూగుల్ మ్యాప్స్ లొకేషన్ వివరాలు వెంటనే పంపిస్తాము.`
+      : `Our main office is centrally located in the city. I will share the exact Google Maps location link on your phone right away.`;
+  }
+
+  if (t.includes("discount") || t.includes("offer") || t.includes("తగ్గింపు") || t.includes("ఆఫర్")) {
+    return isTe
+      ? `అవునండి! ఈ నెలలో సంప్రదించిన కస్టమర్ల కోసం ప్రత్యేకంగా 15% వరకు ప్రత్యేక రాయితీ ఆఫర్ నడుస్తోంది!`
+      : `Yes! We are running a special 15% introductory discount offer for customers this week!`;
+  }
+
+  return isTe
+    ? `నమస్కారం అండి! ${company} నుండి మీ వివరాలు నోట్ చేసుకున్నాము. మీకు కావాల్సిన పూర్తి వివరాలు వెంటనే పంపిస్తాము.`
+    : `Hello and thank you! We have noted your request at ${company}. We will share the full details with you right away.`;
 }
 

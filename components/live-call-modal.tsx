@@ -7,10 +7,10 @@ import {
   PhoneIncoming,
   PhoneOff,
   Mic,
+  MicOff,
   Volume2,
   Bot,
   User,
-  Send,
   CheckCircle2,
   X,
   Radio,
@@ -18,6 +18,8 @@ import {
   ShieldCheck,
   RefreshCw,
   Smartphone,
+  Keyboard,
+  Send,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -35,8 +37,8 @@ type CallPhase =
   | "incoming_ring" // Simulated incoming call ringing on device
   | "connecting" // Outgoing ringing
   | "greeting" // Agent speaking greeting
-  | "listening" // Listening to user microphone
-  | "processing" // Gnani STT + Gemini + Timbre TTS
+  | "listening" // Hands-free VAD listening to user speech
+  | "processing" // Gnani STT + Gemini reasoning + Timbre TTS
   | "speaking" // Agent speaking response
   | "ended"; // Call ended & saved to CRM
 
@@ -61,15 +63,26 @@ export function LiveCallModal({
   const [turns, setTurns] = useState<Turn[]>([]);
   const [statusText, setStatusText] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isMicMuted, setIsMicMuted] = useState(false);
+  const [showKeyboardInput, setShowKeyboardInput] = useState(false);
   const [textInputFallback, setTextInputFallback] = useState("");
   const [savedCallId, setSavedCallId] = useState<string | null>(null);
   const [currentAudioUrl, setCurrentAudioUrl] = useState<string | null>(null);
   const [audioBlocked, setAudioBlocked] = useState(false);
+  const [isUserSpeakingState, setIsUserSpeakingState] = useState(false);
 
-  // Audio & Mic Refs
+  // Audio & VAD Refs
   const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const vadIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const vadStreamRef = useRef<MediaStream | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const speechStartTimeRef = useRef<number | null>(null);
+  const lastVoiceTimeRef = useRef<number | null>(null);
+  const isUserSpeakingRef = useRef<boolean>(false);
+  const isProcessingRef = useRef<boolean>(false);
+
   const agentAudioRef = useRef<HTMLAudioElement | null>(null);
   const callTimerRef = useRef<NodeJS.Timeout | null>(null);
   const ringtoneTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -87,6 +100,8 @@ export function LiveCallModal({
       setSavedCallId(null);
       setAudioBlocked(false);
       setCurrentAudioUrl(null);
+      setIsUserSpeakingState(false);
+      setShowKeyboardInput(false);
     } else {
       cleanupCall();
     }
@@ -101,6 +116,7 @@ export function LiveCallModal({
 
   // Clean up all resources
   const cleanupCall = () => {
+    stopVadMonitoring();
     if (callTimerRef.current) clearInterval(callTimerRef.current);
     if (ringtoneTimerRef.current) clearInterval(ringtoneTimerRef.current);
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
@@ -109,10 +125,24 @@ export function LiveCallModal({
         mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
       } catch {}
     }
+    if (vadStreamRef.current) {
+      vadStreamRef.current.getTracks().forEach((track) => track.stop());
+      vadStreamRef.current = null;
+    }
     if (agentAudioRef.current) {
       agentAudioRef.current.pause();
       agentAudioRef.current.currentTime = 0;
     }
+    isProcessingRef.current = false;
+  };
+
+  const stopVadMonitoring = () => {
+    if (vadIntervalRef.current) {
+      clearInterval(vadIntervalRef.current);
+      vadIntervalRef.current = null;
+    }
+    setIsUserSpeakingState(false);
+    isUserSpeakingRef.current = false;
   };
 
   // Play realistic phone ringtone using Web Audio API
@@ -128,7 +158,6 @@ export function LiveCallModal({
       const osc2 = ctx.createOscillator();
       const gain = ctx.createGain();
 
-      // Incoming ring: dual tones 440Hz + 480Hz
       osc1.frequency.value = isIncoming ? 440 : 400;
       osc2.frequency.value = isIncoming ? 480 : 450;
       gain.gain.setValueAtTime(0.12, ctx.currentTime);
@@ -143,7 +172,6 @@ export function LiveCallModal({
       osc1.stop(ctx.currentTime + 1.4);
       osc2.stop(ctx.currentTime + 1.4);
 
-      // Trigger mobile device vibration if supported
       if (typeof navigator !== "undefined" && navigator.vibrate) {
         navigator.vibrate([400, 200, 400]);
       }
@@ -158,7 +186,7 @@ export function LiveCallModal({
     }
   };
 
-  // 1. INCOMING CALL TRIGGER: Agent rings the user's phone screen
+  // 1. INCOMING CALL TRIGGER
   const handleTriggerIncomingCall = () => {
     primeAudioElement();
     setErrorMessage(null);
@@ -169,14 +197,13 @@ export function LiveCallModal({
     ringtoneTimerRef.current = setInterval(() => playRingtone(true), 2400);
   };
 
-  // 2. ANSWER INCOMING CALL (User clicks big green Answer button)
+  // 2. ANSWER INCOMING CALL
   const handleAnswerIncomingCall = async () => {
     if (ringtoneTimerRef.current) clearInterval(ringtoneTimerRef.current);
     primeAudioElement();
     setPhase("greeting");
     setStatusText(`Connected! ${agentVoiceName} is speaking...`);
 
-    // Fetch live call start
     try {
       const res = await fetch("/api/live-call", {
         method: "POST",
@@ -194,15 +221,13 @@ export function LiveCallModal({
       };
       setTurns([greetingTurn]);
 
-      // Start duration counter
       setCallDuration(0);
       callTimerRef.current = setInterval(() => {
         setCallDuration((prev) => prev + 1);
       }, 1000);
 
-      // Play audio
       playAgentAudio(data.audioUrl, () => {
-        startListening();
+        startHandsFreeListening();
       });
     } catch (err: any) {
       setErrorMessage(err.message || "Could not connect to live agent.");
@@ -210,7 +235,7 @@ export function LiveCallModal({
     }
   };
 
-  // 3. OUTGOING CALL (User calls Agent)
+  // 3. OUTGOING CALL
   const handleStartOutgoingCall = async () => {
     primeAudioElement();
     setErrorMessage(null);
@@ -247,7 +272,7 @@ export function LiveCallModal({
       }, 1000);
 
       playAgentAudio(data.audioUrl, () => {
-        startListening();
+        startHandsFreeListening();
       });
     } catch (err: any) {
       if (ringtoneTimerRef.current) clearInterval(ringtoneTimerRef.current);
@@ -256,7 +281,7 @@ export function LiveCallModal({
     }
   };
 
-  // Play Agent Audio & handle playback smoothly
+  // Play Agent Audio & execute callback when completed
   const playAgentAudio = (url: string, onEnded?: () => void) => {
     if (!url) {
       if (onEnded) onEnded();
@@ -278,8 +303,7 @@ export function LiveCallModal({
     };
 
     audio.onerror = () => {
-      console.warn("Audio playback error, falling back to static voice:", url);
-      // Fallback to static voice preview
+      console.warn("Audio playback error, fallback to static voice:", url);
       audio.src = `/audio/voice_${agentVoiceName.toLowerCase()}.wav`;
       audio.play().catch(() => {});
     };
@@ -290,30 +314,54 @@ export function LiveCallModal({
         console.warn("Autoplay block detected:", err);
         setAudioBlocked(true);
         setStatusText("Click 'Tap to Listen' below to hear the voice.");
-        // Do NOT automatically skip to listening if user hasn't heard agent!
       });
     }
   };
 
-  // Manually unlock and replay agent audio
   const handleManualPlayAudio = () => {
     if (agentAudioRef.current && currentAudioUrl) {
       agentAudioRef.current.src = currentAudioUrl;
-      agentAudioRef.current.play().then(() => {
-        setAudioBlocked(false);
-        setStatusText(`${agentVoiceName} is speaking...`);
-      }).catch(() => {});
+      agentAudioRef.current
+        .play()
+        .then(() => {
+          setAudioBlocked(false);
+          setStatusText(`${agentVoiceName} is speaking...`);
+        })
+        .catch(() => {});
     }
   };
 
-  // Start user microphone recording
-  const startListening = async () => {
-    setPhase("listening");
-    setStatusText("Agent is listening... Speak into your microphone now");
+  // 4. HANDS-FREE VOICE ACTIVITY DETECTION (VAD) & SILENCE DETECTION
+  const startHandsFreeListening = async () => {
+    stopVadMonitoring();
+    isProcessingRef.current = false;
     audioChunksRef.current = [];
+    speechStartTimeRef.current = null;
+    lastVoiceTimeRef.current = null;
+    isUserSpeakingRef.current = false;
+
+    setPhase("listening");
+    setStatusText("Listening... (Speak naturally into your phone)");
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      const ctx = audioContextRef.current || new AudioCtx();
+      audioContextRef.current = ctx;
+      if (ctx.state === "suspended") await ctx.resume();
+
+      const stream =
+        vadStreamRef.current ||
+        (await navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+        }));
+      vadStreamRef.current = stream;
+
+      const source = ctx.createMediaStreamSource(stream);
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 512;
+      source.connect(analyser);
+      analyserRef.current = analyser;
+
       const recorder = new MediaRecorder(stream, {
         mimeType: MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
           ? "audio/webm;codecs=opus"
@@ -328,27 +376,76 @@ export function LiveCallModal({
         }
       };
 
-      recorder.start(250);
+      recorder.start(100);
+
+      // VAD Loop: monitors mic volume and detects when user stops speaking
+      const buffer = new Float32Array(analyser.fftSize);
+      const VOICE_THRESHOLD = 0.015; // standard speech threshold
+      const SILENCE_TIMEOUT = 1200; // 1.2s of silence triggers auto-send
+      const MAX_TURN_TIME = 15000; // 15s max per turn
+
+      vadIntervalRef.current = setInterval(() => {
+        if (isProcessingRef.current || !analyserRef.current) return;
+
+        analyserRef.current.getFloatTimeDomainData(buffer);
+        let sum = 0;
+        for (let i = 0; i < buffer.length; i++) {
+          sum += buffer[i] * buffer[i];
+        }
+        const rms = Math.sqrt(sum / buffer.length);
+        const now = Date.now();
+
+        if (rms > VOICE_THRESHOLD) {
+          if (!speechStartTimeRef.current) {
+            speechStartTimeRef.current = now;
+          }
+          lastVoiceTimeRef.current = now;
+          if (!isUserSpeakingRef.current) {
+            isUserSpeakingRef.current = true;
+            setIsUserSpeakingState(true);
+            setStatusText("You are speaking...");
+          }
+        } else {
+          // Below threshold
+          if (isUserSpeakingRef.current && lastVoiceTimeRef.current) {
+            const silenceDuration = now - lastVoiceTimeRef.current;
+            const speechDuration = now - (speechStartTimeRef.current || now);
+
+            // User spoke for at least 600ms and paused for 1.2s, or reached max duration
+            if ((silenceDuration >= SILENCE_TIMEOUT && speechDuration >= 600) || speechDuration >= MAX_TURN_TIME) {
+              stopVadMonitoring();
+              handleAutomaticTurnSubmit();
+            }
+          }
+        }
+      }, 80);
     } catch (err: any) {
-      console.warn("Microphone access unavailable:", err);
-      setStatusText("Microphone unavailable. You can type your response below.");
+      console.warn("Microphone access unavailable for VAD:", err);
+      setStatusText("Microphone unavailable. You can tap a quick inquiry or type below.");
+      setShowKeyboardInput(true);
     }
   };
 
-  // User finished speaking -> send audio to Gnani STT + Gemini + Gnani Timbre
-  const handleDoneSpeaking = async () => {
-    if (phase !== "listening") return;
+  // 5. AUTOMATIC TURN SUBMISSION (Zero Button Pressing Needed!)
+  const handleAutomaticTurnSubmit = async () => {
+    if (isProcessingRef.current) return;
+    isProcessingRef.current = true;
 
+    stopVadMonitoring();
     setPhase("processing");
-    setStatusText("Transcribing your speech with Gnani Prisma STT...");
+    setStatusText("AI Agent is thinking...");
 
-    const chunks = audioChunksRef.current;
+    // Stop recorder to collect all pending chunks
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       try {
         mediaRecorderRef.current.stop();
-        mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
       } catch {}
     }
+
+    // Small delay to ensure recorder flushed
+    await new Promise((resolve) => setTimeout(resolve, 150));
+
+    const chunks = audioChunksRef.current;
 
     try {
       const formData = new FormData();
@@ -358,12 +455,9 @@ export function LiveCallModal({
       if (chunks.length > 0) {
         const audioBlob = new Blob(chunks, { type: "audio/webm" });
         formData.append("audio", audioBlob, "mic_input.webm");
-      } else if (textInputFallback.trim()) {
-        const textBlob = new Blob([textInputFallback], { type: "text/plain" });
-        formData.append("audio", textBlob, "mic_input.webm");
       }
 
-      setStatusText("Gemini is analyzing & Gnani Timbre is synthesizing speech...");
+      setStatusText("Gemini reasoning & Gnani Timbre synthesizing reply...");
 
       const res = await fetch("/api/live-call", {
         method: "POST",
@@ -371,12 +465,10 @@ export function LiveCallModal({
       });
 
       if (!res.ok) throw new Error(`Turn failed with status ${res.status}`);
-
       const data = await res.json();
-      setTextInputFallback("");
 
-      const userText = data.customerText || "(Customer Speech)";
-      const agentReply = data.agentReply || "ధన్యవాదాలు అండి.";
+      const userText = data.customerText || "(Inquiry)";
+      const agentReply = data.agentReply || "చాలా సంతోషం అండి.";
 
       setTurns((prev) => [
         ...prev,
@@ -387,36 +479,31 @@ export function LiveCallModal({
       setPhase("speaking");
       setStatusText(`${agentVoiceName} is speaking...`);
 
+      // Play Agent Spoken Reply -> Once finished, immediately resume hands-free listening
       playAgentAudio(data.audioUrl, () => {
-        startListening();
+        startHandsFreeListening();
       });
     } catch (turnErr: any) {
-      console.error("Turn error:", turnErr);
-      setStatusText("Could not process speech. Please speak again.");
-      setTimeout(() => startListening(), 1500);
+      console.error("Automatic turn error:", turnErr);
+      setStatusText("Could not process speech. Listening again...");
+      setTimeout(() => startHandsFreeListening(), 1500);
     }
   };
 
-  // Submit turn via direct text or quick-question prompt
+  // Direct prompt turn (for 1-click inquiry pills or text typing)
   const handleSendTurnPrompt = async (text: string) => {
-    if (!text.trim()) return;
-    setPhase("processing");
-    setStatusText("Processing speech inquiry...");
+    if (!text.trim() || isProcessingRef.current) return;
+    isProcessingRef.current = true;
 
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
-      try {
-        mediaRecorderRef.current.stop();
-        mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
-      } catch {}
-    }
+    stopVadMonitoring();
+    setPhase("processing");
+    setStatusText("AI Agent is reasoning...");
 
     try {
       const formData = new FormData();
       formData.append("history", JSON.stringify(turns));
       formData.append("phoneNumber", phoneNumber);
       formData.append("text", text);
-
-      setStatusText("Gemini reasoning & Gnani Timbre synthesizing voice reply...");
 
       const res = await fetch("/api/live-call", {
         method: "POST",
@@ -439,28 +526,20 @@ export function LiveCallModal({
       setStatusText(`${agentVoiceName} is speaking...`);
 
       playAgentAudio(data.audioUrl, () => {
-        startListening();
+        startHandsFreeListening();
       });
     } catch (turnErr: any) {
       console.error("Turn error:", turnErr);
       setStatusText("Could not process speech inquiry.");
-      setTimeout(() => startListening(), 1500);
+      setTimeout(() => startHandsFreeListening(), 1500);
     }
-  };
-
-  // Submit fallback text response
-  const handleSendTextFallback = () => {
-    if (!textInputFallback.trim()) return;
-    const txt = textInputFallback;
-    setTextInputFallback("");
-    handleSendTurnPrompt(txt);
   };
 
   // End Call & Save full conversation into SQLite calls & leads
   const handleEndCall = async () => {
     cleanupCall();
     setPhase("ended");
-    setStatusText("Saving call recording & generating CRM Lead Card...");
+    setStatusText("Call ended. Saving recording & CRM Lead Card...");
 
     try {
       const res = await fetch("/api/live-call", {
@@ -486,7 +565,6 @@ export function LiveCallModal({
     }
   };
 
-  // Format seconds to mm:ss
   const formatDuration = (totalSeconds: number) => {
     const mins = Math.floor(totalSeconds / 60)
       .toString()
@@ -498,7 +576,7 @@ export function LiveCallModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
       <div className="relative w-full max-w-md sm:max-w-lg bg-surface border border-border rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Header Bar */}
         <div className="px-4 py-3 sm:px-5 sm:py-4 border-b border-border flex items-center justify-between bg-paper/60">
@@ -512,11 +590,11 @@ export function LiveCallModal({
                   AI Live Phone Call
                 </h3>
                 <span className="text-[10px] bg-secondary/15 text-secondary border border-secondary/30 px-1.5 py-0.2 rounded font-medium">
-                  Free Demo
+                  Hands-Free Real Call
                 </span>
               </div>
               <p className="text-[11px] text-muted">
-                Gnani Prisma STT + Gemini 2.5 + Gnani Timbre TTS
+                Gnani Prisma STT + Multi-Model Gemini + Gnani Timbre TTS
               </p>
             </div>
           </div>
@@ -539,10 +617,10 @@ export function LiveCallModal({
             </div>
           )}
 
-          {/* PHASE 1: DIALER / CALL TRIGGER */}
+          {/* PHASE 1: DIALER SCREEN */}
           {phase === "dialer" && (
             <div className="space-y-4">
-              {/* Call Direction Tabs: "Call My Phone (Incoming)" vs "I Call Agent (Outgoing)" */}
+              {/* Call Direction Tabs */}
               <div className="flex rounded-xl bg-paper p-1 border border-border">
                 <button
                   type="button"
@@ -573,7 +651,7 @@ export function LiveCallModal({
               {/* Phone Number Display */}
               <div className="text-center space-y-1">
                 <span className="text-xs text-muted">
-                  {callMode === "incoming" ? "Your Mobile Phone Number" : "Agent Dialing Number"}
+                  {callMode === "incoming" ? "Your Phone Number" : "Agent Dialing Number"}
                 </span>
                 <input
                   type="text"
@@ -609,11 +687,7 @@ export function LiveCallModal({
                   <strong className="text-ink">{companyName}</strong>
                 </div>
                 <div className="text-[11px] text-muted pt-1 border-t border-border">
-                  {callMode === "incoming" ? (
-                    <span>💡 Rings your device with simulated incoming call &amp; vibration. Tap <strong>Accept</strong> to answer!</span>
-                  ) : (
-                    <span>💡 Connects instantly via your microphone and speaks with Gnani Timbre voice.</span>
-                  )}
+                  <span>📞 <strong>100% Hands-Free Real Call</strong>: Speak naturally like a normal telephone call. The AI detects when you stop speaking automatically. No send buttons!</span>
                 </div>
               </div>
 
@@ -638,11 +712,10 @@ export function LiveCallModal({
             </div>
           )}
 
-          {/* PHASE 2: INCOMING CALL RINGING SCREEN (Realistic Smartphone Look) */}
+          {/* PHASE 2: INCOMING CALL RINGING SCREEN */}
           {phase === "incoming_ring" && (
             <div className="py-6 sm:py-8 flex flex-col items-center justify-center space-y-6 text-center animate-fade-in">
               <div className="relative">
-                {/* Pulsing incoming call waves */}
                 <span className="absolute -inset-4 rounded-full bg-secondary/20 animate-ping" />
                 <span className="absolute -inset-8 rounded-full bg-secondary/10 animate-pulse" />
                 <div className="relative w-24 h-24 rounded-full bg-secondary/15 border-2 border-secondary/40 flex items-center justify-center text-secondary shadow-lg">
@@ -667,7 +740,6 @@ export function LiveCallModal({
 
               {/* Accept & Decline Buttons */}
               <div className="flex items-center justify-center gap-8 pt-4 w-full">
-                {/* Decline Button */}
                 <div className="flex flex-col items-center gap-1.5">
                   <button
                     onClick={() => {
@@ -681,7 +753,6 @@ export function LiveCallModal({
                   <span className="text-[11px] text-muted font-medium">Decline</span>
                 </div>
 
-                {/* Accept Button */}
                 <div className="flex flex-col items-center gap-1.5">
                   <button
                     onClick={handleAnswerIncomingCall}
@@ -695,24 +766,27 @@ export function LiveCallModal({
             </div>
           )}
 
-          {/* PHASE 3, 4, 5, 6: ACTIVE CALL (GREETING, LISTENING, SPEAKING) */}
+          {/* PHASE 3, 4, 5, 6: ACTIVE HANDS-FREE PHONE CALL (NO SEND BUTTON!) */}
           {(phase === "connecting" ||
             phase === "greeting" ||
             phase === "listening" ||
             phase === "processing" ||
             phase === "speaking") && (
             <div className="space-y-4">
-              {/* Call Header Status Card */}
+              {/* Telephone Caller Card */}
               <div className="bg-paper border border-border rounded-xl p-4 text-center space-y-2">
-                <div className="flex items-center justify-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-secondary animate-ping" />
-                  <span className="font-mono text-sm font-semibold text-secondary">
-                    {phase === "connecting" ? "CONNECTING..." : formatDuration(callDuration)}
-                  </span>
+                <div className="flex items-center justify-between px-2 text-xs">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-secondary animate-ping" />
+                    <span className="font-mono text-xs font-semibold text-secondary">
+                      {phase === "connecting" ? "CONNECTING..." : formatDuration(callDuration)}
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-muted font-mono">{phoneNumber}</span>
                 </div>
 
                 <div className="font-heading text-lg font-bold text-ink">{companyName}</div>
-                <div className="text-xs text-muted font-mono">{phoneNumber}</div>
+                <div className="text-xs text-muted">{agentVoiceName} · AI Sales Executive</div>
 
                 {/* Animated Voice Equalizer */}
                 <div className="pt-2 flex items-center justify-center gap-1.5 h-8">
@@ -725,13 +799,20 @@ export function LiveCallModal({
                       <span className="w-1.5 h-5 bg-accent animate-pulse delay-200 rounded-full" />
                     </>
                   ) : phase === "listening" ? (
-                    <>
-                      <span className="w-1.5 h-4 bg-secondary animate-bounce rounded-full" />
-                      <span className="w-1.5 h-7 bg-secondary animate-bounce delay-100 rounded-full" />
-                      <span className="w-1.5 h-5 bg-secondary animate-bounce delay-200 rounded-full" />
-                      <span className="w-1.5 h-6 bg-secondary animate-bounce delay-75 rounded-full" />
-                      <span className="w-1.5 h-3 bg-secondary animate-bounce delay-150 rounded-full" />
-                    </>
+                    isUserSpeakingState ? (
+                      <>
+                        <span className="w-1.5 h-6 bg-secondary animate-bounce rounded-full" />
+                        <span className="w-1.5 h-9 bg-secondary animate-bounce delay-100 rounded-full" />
+                        <span className="w-1.5 h-7 bg-secondary animate-bounce delay-200 rounded-full" />
+                        <span className="w-1.5 h-8 bg-secondary animate-bounce delay-75 rounded-full" />
+                        <span className="w-1.5 h-5 bg-secondary animate-bounce delay-150 rounded-full" />
+                      </>
+                    ) : (
+                      <div className="flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-secondary animate-ping" />
+                        <span className="text-xs text-secondary font-medium">Mic Active · Speak Naturally</span>
+                      </div>
+                    )
                   ) : phase === "processing" ? (
                     <RefreshCw className="w-5 h-5 text-accent animate-spin" />
                   ) : (
@@ -758,10 +839,10 @@ export function LiveCallModal({
               {/* Live Conversation Transcript */}
               <div
                 ref={chatScrollRef}
-                className="bg-paper/60 border border-border rounded-xl p-3 space-y-2.5 max-h-48 overflow-y-auto text-xs"
+                className="bg-paper/60 border border-border rounded-xl p-3 space-y-2.5 max-h-44 overflow-y-auto text-xs"
               >
                 {turns.length === 0 ? (
-                  <p className="text-muted text-center py-4">Waiting for call connection...</p>
+                  <p className="text-muted text-center py-4">Call connected. Speak to your agent...</p>
                 ) : (
                   turns.map((turn, idx) => (
                     <div
@@ -796,71 +877,99 @@ export function LiveCallModal({
                 )}
               </div>
 
-              {/* User Mic / Speaking Controls */}
-              {phase === "listening" && (
-                <div className="space-y-2">
-                  <div className="flex gap-2">
+              {/* 1-Click Quick Inquiries (Mic-free fallback) */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-[10px] text-muted">
+                  <span>Quick Questions (Tap anytime):</span>
+                  <button
+                    onClick={() => setShowKeyboardInput(!showKeyboardInput)}
+                    className="hover:text-ink underline"
+                  >
+                    {showKeyboardInput ? "Hide Keyboard" : "Type Inquiry"}
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                  {[
+                    "నమస్కారం, పూర్తి వివరాలు మరియు ఛార్జీలు చెప్పగలరా?",
+                    "రేపు ఉదయం 11 గంటలకు అపాయింట్‌మెంట్ దొరుకుతుందా?",
+                    "What are your service packages and pricing?",
+                    "Can we schedule a consultation call tomorrow?",
+                  ].map((promptText, i) => (
                     <button
-                      onClick={handleDoneSpeaking}
-                      className="flex-1 py-3 bg-secondary text-surface font-semibold text-xs rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-xs"
+                      key={i}
+                      type="button"
+                      disabled={phase === "processing"}
+                      onClick={() => handleSendTurnPrompt(promptText)}
+                      className="text-[11px] bg-paper hover:bg-surface border border-border hover:border-accent text-ink px-2.5 py-1.5 rounded-lg transition-colors text-left truncate shadow-2xs disabled:opacity-50"
                     >
-                      <Mic className="w-4 h-4 animate-pulse" />
-                      <span>Done Speaking / Send to AI</span>
+                      💬 {promptText}
                     </button>
-                  </div>
-                  {/* Quick 1-click inquiries if mic is noisy or not working */}
-                  <div className="space-y-1.5 pt-1">
-                    <span className="text-[10px] text-muted font-medium flex items-center gap-1">
-                      <span>⚡ Mic not working? Tap any question to hear AI reply:</span>
-                    </span>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                      {[
-                        "నమస్కారం, పూర్తి వివరాలు మరియు ఛార్జీలు చెప్పగలరా?",
-                        "రేపు ఉదయం 11 గంటలకు అపాయింట్‌మెంట్ దొరుకుతుందా?",
-                        "What are your service packages and pricing?",
-                        "Can we schedule a consultation call tomorrow?",
-                      ].map((promptText, i) => (
-                        <button
-                          key={i}
-                          type="button"
-                          onClick={() => handleSendTurnPrompt(promptText)}
-                          className="text-[11px] bg-paper hover:bg-surface border border-border hover:border-accent text-ink px-2.5 py-1.5 rounded-lg transition-colors text-left truncate shadow-2xs"
-                        >
-                          💬 {promptText}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  ))}
+                </div>
+              </div>
 
-                  {/* Fallback keyboard input in case mic is muted or quiet environment */}
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Or type what you want to say..."
-                      value={textInputFallback}
-                      onChange={(e) => setTextInputFallback(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && handleSendTextFallback()}
-                      className="flex-1 text-xs bg-paper border border-border rounded-lg px-3 py-2 text-ink focus:outline-none focus:border-accent"
-                    />
-                    <button
-                      onClick={handleSendTextFallback}
-                      disabled={!textInputFallback.trim()}
-                      className="px-3 py-2 bg-paper border border-border hover:border-accent text-ink rounded-lg text-xs disabled:opacity-40"
-                    >
-                      <Send className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
+              {/* Optional Text typing input only if toggled */}
+              {showKeyboardInput && (
+                <div className="flex gap-2 pt-1 animate-fade-in">
+                  <input
+                    type="text"
+                    placeholder="Type what you want to say..."
+                    value={textInputFallback}
+                    onChange={(e) => setTextInputFallback(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && textInputFallback.trim()) {
+                        handleSendTurnPrompt(textInputFallback);
+                        setTextInputFallback("");
+                      }
+                    }}
+                    className="flex-1 text-xs bg-paper border border-border rounded-lg px-3 py-2 text-ink focus:outline-none focus:border-accent"
+                  />
+                  <button
+                    onClick={() => {
+                      if (textInputFallback.trim()) {
+                        handleSendTurnPrompt(textInputFallback);
+                        setTextInputFallback("");
+                      }
+                    }}
+                    className="px-3 py-2 bg-paper border border-border hover:border-accent text-ink rounded-lg text-xs"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               )}
 
-              {/* Red Hang Up Button */}
-              <button
-                onClick={handleEndCall}
-                className="w-full py-3 bg-destructive text-surface font-semibold text-xs rounded-xl hover:opacity-90 transition-all shadow-sm flex items-center justify-center gap-2"
-              >
-                <PhoneOff className="w-4 h-4" />
-                <span>End Call &amp; Save to CRM</span>
-              </button>
+              {/* REAL CALL CONTROLS: Pure Red Hang Up Button & Mute Mic */}
+              <div className="pt-2 flex items-center justify-center gap-6">
+                {/* Mute / Unmute Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = !isMicMuted;
+                    setIsMicMuted(next);
+                    if (vadStreamRef.current) {
+                      vadStreamRef.current.getAudioTracks().forEach((t) => (t.enabled = !next));
+                    }
+                  }}
+                  className={`p-3.5 rounded-full border transition-all ${
+                    isMicMuted
+                      ? "bg-destructive/15 text-destructive border-destructive/30"
+                      : "bg-paper text-ink border-border hover:border-accent"
+                  }`}
+                  title={isMicMuted ? "Unmute Microphone" : "Mute Microphone"}
+                >
+                  {isMicMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                </button>
+
+                {/* Big Red Hang Up Button (Like an iPhone / Android Phone Call) */}
+                <button
+                  type="button"
+                  onClick={handleEndCall}
+                  className="w-16 h-16 rounded-full bg-destructive text-surface flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-transform"
+                  title="Hang Up & Save Call to CRM"
+                >
+                  <PhoneOff className="w-7 h-7" />
+                </button>
+              </div>
             </div>
           )}
 
