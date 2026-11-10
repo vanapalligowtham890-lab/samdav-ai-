@@ -4,13 +4,12 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   Phone,
   PhoneCall,
+  PhoneIncoming,
   PhoneOff,
   Mic,
-  MicOff,
   Volume2,
-  Sparkles,
-  User,
   Bot,
+  User,
   Send,
   CheckCircle2,
   X,
@@ -18,6 +17,7 @@ import {
   ArrowRight,
   ShieldCheck,
   RefreshCw,
+  Smartphone,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -31,8 +31,9 @@ interface LiveCallModalProps {
 }
 
 type CallPhase =
-  | "dialer" // Keypad / Enter number
-  | "connecting" // Ringing / Establishing call
+  | "dialer" // Dialpad / options
+  | "incoming_ring" // Simulated incoming call ringing on device
+  | "connecting" // Outgoing ringing
   | "greeting" // Agent speaking greeting
   | "listening" // Listening to user microphone
   | "processing" // Gnani STT + Gemini + Timbre TTS
@@ -53,15 +54,17 @@ export function LiveCallModal({
   onCallSaved,
 }: LiveCallModalProps) {
   const [phase, setPhase] = useState<CallPhase>("dialer");
+  const [callMode, setCallMode] = useState<"incoming" | "outgoing">("incoming");
   const [phoneNumber, setPhoneNumber] = useState(defaultPhone);
   const [sessionId, setSessionId] = useState<string>("");
   const [callDuration, setCallDuration] = useState<number>(0);
   const [turns, setTurns] = useState<Turn[]>([]);
   const [statusText, setStatusText] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isMicMuted, setIsMicMuted] = useState(false);
   const [textInputFallback, setTextInputFallback] = useState("");
   const [savedCallId, setSavedCallId] = useState<string | null>(null);
+  const [currentAudioUrl, setCurrentAudioUrl] = useState<string | null>(null);
+  const [audioBlocked, setAudioBlocked] = useState(false);
 
   // Audio & Mic Refs
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -76,11 +79,14 @@ export function LiveCallModal({
   useEffect(() => {
     if (isOpen) {
       setPhase("dialer");
+      setCallMode("incoming");
       setPhoneNumber(defaultPhone);
       setTurns([]);
       setCallDuration(0);
       setErrorMessage(null);
       setSavedCallId(null);
+      setAudioBlocked(false);
+      setCurrentAudioUrl(null);
     } else {
       cleanupCall();
     }
@@ -109,22 +115,24 @@ export function LiveCallModal({
     }
   };
 
-  // Play realistic synthesized ringtone using Web Audio API
-  const playRingtoneBeep = () => {
+  // Play realistic phone ringtone using Web Audio API
+  const playRingtone = (isIncoming: boolean = true) => {
     try {
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
       if (!AudioCtx) return;
       const ctx = audioContextRef.current || new AudioCtx();
       audioContextRef.current = ctx;
+      if (ctx.state === "suspended") ctx.resume();
 
       const osc1 = ctx.createOscillator();
       const osc2 = ctx.createOscillator();
       const gain = ctx.createGain();
 
-      osc1.frequency.value = 400; // Indian/standard ringback
-      osc2.frequency.value = 450;
-      gain.gain.setValueAtTime(0.08, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.2);
+      // Incoming ring: dual tones 440Hz + 480Hz
+      osc1.frequency.value = isIncoming ? 440 : 400;
+      osc2.frequency.value = isIncoming ? 480 : 450;
+      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.4);
 
       osc1.connect(gain);
       osc2.connect(gain);
@@ -132,22 +140,85 @@ export function LiveCallModal({
 
       osc1.start();
       osc2.start();
-      osc1.stop(ctx.currentTime + 1.2);
-      osc2.stop(ctx.currentTime + 1.2);
-    } catch (e) {
-      // AudioContext might be blocked until user gesture, ignore safely
+      osc1.stop(ctx.currentTime + 1.4);
+      osc2.stop(ctx.currentTime + 1.4);
+
+      // Trigger mobile device vibration if supported
+      if (typeof navigator !== "undefined" && navigator.vibrate) {
+        navigator.vibrate([400, 200, 400]);
+      }
+    } catch {}
+  };
+
+  // Pre-prime audio element synchronously on click
+  const primeAudioElement = () => {
+    if (!agentAudioRef.current) {
+      const audio = new Audio();
+      agentAudioRef.current = audio;
     }
   };
 
-  // Start Call Flow
-  const handleStartCall = async () => {
+  // 1. INCOMING CALL TRIGGER: Agent rings the user's phone screen
+  const handleTriggerIncomingCall = () => {
+    primeAudioElement();
+    setErrorMessage(null);
+    setPhase("incoming_ring");
+    setStatusText("Incoming Call from AI Sales Agent...");
+
+    playRingtone(true);
+    ringtoneTimerRef.current = setInterval(() => playRingtone(true), 2400);
+  };
+
+  // 2. ANSWER INCOMING CALL (User clicks big green Answer button)
+  const handleAnswerIncomingCall = async () => {
+    if (ringtoneTimerRef.current) clearInterval(ringtoneTimerRef.current);
+    primeAudioElement();
+    setPhase("greeting");
+    setStatusText(`Connected! ${agentVoiceName} is speaking...`);
+
+    // Fetch live call start
+    try {
+      const res = await fetch("/api/live-call", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "start", phoneNumber }),
+      });
+
+      if (!res.ok) throw new Error(`Call start failed (${res.status})`);
+      const data = await res.json();
+
+      setSessionId(data.sessionId || `live_call_${Date.now()}`);
+      const greetingTurn: Turn = {
+        speaker: "agent",
+        text: data.greeting || `నమస్కారం! నేను ${companyName} నుండి మాట్లాడుతున్నాను.`,
+      };
+      setTurns([greetingTurn]);
+
+      // Start duration counter
+      setCallDuration(0);
+      callTimerRef.current = setInterval(() => {
+        setCallDuration((prev) => prev + 1);
+      }, 1000);
+
+      // Play audio
+      playAgentAudio(data.audioUrl, () => {
+        startListening();
+      });
+    } catch (err: any) {
+      setErrorMessage(err.message || "Could not connect to live agent.");
+      setPhase("dialer");
+    }
+  };
+
+  // 3. OUTGOING CALL (User calls Agent)
+  const handleStartOutgoingCall = async () => {
+    primeAudioElement();
     setErrorMessage(null);
     setPhase("connecting");
-    setStatusText(`Connecting to ${agentVoiceName} at ${companyName}...`);
+    setStatusText(`Calling ${agentVoiceName} at ${companyName}...`);
 
-    // Ringing sound
-    playRingtoneBeep();
-    ringtoneTimerRef.current = setInterval(playRingtoneBeep, 2500);
+    playRingtone(false);
+    ringtoneTimerRef.current = setInterval(() => playRingtone(false), 2600);
 
     try {
       const res = await fetch("/api/live-call", {
@@ -156,10 +227,7 @@ export function LiveCallModal({
         body: JSON.stringify({ action: "start", phoneNumber }),
       });
 
-      if (!res.ok) {
-        throw new Error(`Failed to initiate live call (${res.status})`);
-      }
-
+      if (!res.ok) throw new Error(`Failed to initiate live call (${res.status})`);
       const data = await res.json();
       if (ringtoneTimerRef.current) clearInterval(ringtoneTimerRef.current);
 
@@ -167,22 +235,18 @@ export function LiveCallModal({
       setPhase("greeting");
       setStatusText(`${data.agentVoice || agentVoiceName} is speaking...`);
 
-      // Add agent greeting turn
       const greetingTurn: Turn = {
         speaker: "agent",
         text: data.greeting || `నమస్కారం! నేను ${companyName} నుండి మాట్లాడుతున్నాను.`,
       };
       setTurns([greetingTurn]);
 
-      // Start call duration counter
       setCallDuration(0);
       callTimerRef.current = setInterval(() => {
         setCallDuration((prev) => prev + 1);
       }, 1000);
 
-      // Play Greeting Audio
       playAgentAudio(data.audioUrl, () => {
-        // Once greeting completes, transition to listening to user mic
         startListening();
       });
     } catch (err: any) {
@@ -192,21 +256,54 @@ export function LiveCallModal({
     }
   };
 
-  // Play Agent Audio & execute callback when finished
+  // Play Agent Audio & handle playback smoothly
   const playAgentAudio = (url: string, onEnded?: () => void) => {
     if (!url) {
       if (onEnded) onEnded();
       return;
     }
-    const audio = new Audio(url);
-    agentAudioRef.current = audio;
-    audio.play().catch((e) => {
-      console.warn("Autoplay was blocked or audio failed:", e);
-      if (onEnded) onEnded();
-    });
+
+    setCurrentAudioUrl(url);
+    setAudioBlocked(false);
+
+    let audio = agentAudioRef.current;
+    if (!audio) {
+      audio = new Audio();
+      agentAudioRef.current = audio;
+    }
+
+    audio.src = url;
     audio.onended = () => {
       if (onEnded) onEnded();
     };
+
+    audio.onerror = () => {
+      console.warn("Audio playback error, falling back to static voice:", url);
+      // Fallback to static voice preview
+      audio.src = `/audio/voice_${agentVoiceName.toLowerCase()}.wav`;
+      audio.play().catch(() => {});
+    };
+
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch((err) => {
+        console.warn("Autoplay block detected:", err);
+        setAudioBlocked(true);
+        setStatusText("Click 'Tap to Listen' below to hear the voice.");
+        // Do NOT automatically skip to listening if user hasn't heard agent!
+      });
+    }
+  };
+
+  // Manually unlock and replay agent audio
+  const handleManualPlayAudio = () => {
+    if (agentAudioRef.current && currentAudioUrl) {
+      agentAudioRef.current.src = currentAudioUrl;
+      agentAudioRef.current.play().then(() => {
+        setAudioBlocked(false);
+        setStatusText(`${agentVoiceName} is speaking...`);
+      }).catch(() => {});
+    }
   };
 
   // Start user microphone recording
@@ -233,7 +330,7 @@ export function LiveCallModal({
 
       recorder.start(250);
     } catch (err: any) {
-      console.warn("Microphone access unavailable, using keyboard fallback:", err);
+      console.warn("Microphone access unavailable:", err);
       setStatusText("Microphone unavailable. You can type your response below.");
     }
   };
@@ -262,7 +359,6 @@ export function LiveCallModal({
         const audioBlob = new Blob(chunks, { type: "audio/webm" });
         formData.append("audio", audioBlob, "mic_input.webm");
       } else if (textInputFallback.trim()) {
-        // Fallback if typed text
         const textBlob = new Blob([textInputFallback], { type: "text/plain" });
         formData.append("audio", textBlob, "mic_input.webm");
       }
@@ -274,9 +370,7 @@ export function LiveCallModal({
         body: formData,
       });
 
-      if (!res.ok) {
-        throw new Error(`Turn failed with status ${res.status}`);
-      }
+      if (!res.ok) throw new Error(`Turn failed with status ${res.status}`);
 
       const data = await res.json();
       setTextInputFallback("");
@@ -293,14 +387,12 @@ export function LiveCallModal({
       setPhase("speaking");
       setStatusText(`${agentVoiceName} is speaking...`);
 
-      // Play Agent Spoken Reply
       playAgentAudio(data.audioUrl, () => {
-        // Finished speaking -> listen again
         startListening();
       });
     } catch (turnErr: any) {
       console.error("Turn error:", turnErr);
-      setStatusText("Could not process speech. Please try speaking again.");
+      setStatusText("Could not process speech. Please speak again.");
       setTimeout(() => startListening(), 1500);
     }
   };
@@ -353,25 +445,25 @@ export function LiveCallModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-lg bg-surface border border-border rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+      <div className="relative w-full max-w-md sm:max-w-lg bg-surface border border-border rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Header Bar */}
-        <div className="px-5 py-4 border-b border-border flex items-center justify-between bg-paper/60">
+        <div className="px-4 py-3 sm:px-5 sm:py-4 border-b border-border flex items-center justify-between bg-paper/60">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center text-accent">
-              <PhoneCall className="w-4 h-4" />
+              <Smartphone className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-heading text-sm font-semibold text-ink">
-                  Live Interactive AI Phone Call
+                  AI Live Phone Call
                 </h3>
                 <span className="text-[10px] bg-secondary/15 text-secondary border border-secondary/30 px-1.5 py-0.2 rounded font-medium">
-                  Free Tier
+                  Free Demo
                 </span>
               </div>
               <p className="text-[11px] text-muted">
-                Gnani Prisma (STT) + Gemini 2.5 + Gnani Timbre (TTS)
+                Gnani Prisma STT + Gemini 2.5 + Gnani Timbre TTS
               </p>
             </div>
           </div>
@@ -387,23 +479,54 @@ export function LiveCallModal({
         </div>
 
         {/* Modal Body */}
-        <div className="flex-1 p-5 overflow-y-auto space-y-4">
+        <div className="flex-1 p-4 sm:p-5 overflow-y-auto space-y-4">
           {errorMessage && (
             <div className="p-3 text-xs bg-destructive/10 border border-destructive/20 text-destructive rounded-lg">
               {errorMessage}
             </div>
           )}
 
-          {/* PHASE 1: DIALER KEYPAD */}
+          {/* PHASE 1: DIALER / CALL TRIGGER */}
           {phase === "dialer" && (
             <div className="space-y-4">
+              {/* Call Direction Tabs: "Call My Phone (Incoming)" vs "I Call Agent (Outgoing)" */}
+              <div className="flex rounded-xl bg-paper p-1 border border-border">
+                <button
+                  type="button"
+                  onClick={() => setCallMode("incoming")}
+                  className={`flex-1 py-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+                    callMode === "incoming"
+                      ? "bg-secondary text-surface shadow-xs"
+                      : "text-muted hover:text-ink"
+                  }`}
+                >
+                  <PhoneIncoming className="w-3.5 h-3.5" />
+                  <span>Call My Phone (Incoming)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCallMode("outgoing")}
+                  className={`flex-1 py-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+                    callMode === "outgoing"
+                      ? "bg-accent text-surface shadow-xs"
+                      : "text-muted hover:text-ink"
+                  }`}
+                >
+                  <PhoneCall className="w-3.5 h-3.5" />
+                  <span>Dial Out to Agent</span>
+                </button>
+              </div>
+
+              {/* Phone Number Display */}
               <div className="text-center space-y-1">
-                <span className="text-xs text-muted">Recipient Prospect Phone Number</span>
+                <span className="text-xs text-muted">
+                  {callMode === "incoming" ? "Your Mobile Phone Number" : "Agent Dialing Number"}
+                </span>
                 <input
                   type="text"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
-                  className="w-full text-center font-mono text-xl sm:text-2xl font-bold bg-paper border border-border rounded-xl px-4 py-3 focus:outline-none focus:border-accent text-ink"
+                  className="w-full text-center font-mono text-xl sm:text-2xl font-bold bg-paper border border-border rounded-xl px-4 py-2.5 focus:outline-none focus:border-accent text-ink"
                   placeholder="+91 98490 22334"
                 />
               </div>
@@ -415,60 +538,130 @@ export function LiveCallModal({
                     key={key}
                     type="button"
                     onClick={() => setPhoneNumber((prev) => prev + key)}
-                    className="h-12 rounded-xl bg-paper border border-border hover:border-accent text-ink font-semibold text-lg flex items-center justify-center hover:bg-paper/80 transition-all active:scale-95"
+                    className="h-11 rounded-xl bg-paper border border-border hover:border-accent text-ink font-semibold text-lg flex items-center justify-center hover:bg-paper/80 transition-all active:scale-95"
                   >
                     {key}
                   </button>
                 ))}
               </div>
 
-              {/* Call Agent Details Banner */}
-              <div className="bg-paper border border-border rounded-xl p-3 text-xs space-y-1">
+              {/* Business & Voice Banner */}
+              <div className="bg-paper border border-border rounded-xl p-3 text-xs space-y-1.5">
                 <div className="flex justify-between text-muted">
-                  <span>AI Sales Executive:</span>
+                  <span>AI Executive:</span>
                   <strong className="text-ink">{agentVoiceName}</strong>
                 </div>
                 <div className="flex justify-between text-muted">
-                  <span>Representing Business:</span>
+                  <span>Business Represented:</span>
                   <strong className="text-ink">{companyName}</strong>
                 </div>
-                <div className="flex justify-between text-muted">
-                  <span>Microphone:</span>
-                  <span className="text-secondary font-medium">Browser Real-time Audio</span>
+                <div className="text-[11px] text-muted pt-1 border-t border-border">
+                  {callMode === "incoming" ? (
+                    <span>💡 Rings your device with simulated incoming call &amp; vibration. Tap <strong>Accept</strong> to answer!</span>
+                  ) : (
+                    <span>💡 Connects instantly via your microphone and speaks with Gnani Timbre voice.</span>
+                  )}
                 </div>
               </div>
 
-              {/* Green Call Action Button */}
-              <button
-                onClick={handleStartCall}
-                className="w-full py-3.5 bg-secondary text-surface font-semibold text-sm rounded-xl hover:opacity-95 transition-all shadow-md flex items-center justify-center gap-2 group"
-              >
-                <Phone className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                <span>Call AI Agent Now (Free Demo)</span>
-              </button>
+              {/* Main Call Action Button */}
+              {callMode === "incoming" ? (
+                <button
+                  onClick={handleTriggerIncomingCall}
+                  className="w-full py-3.5 bg-secondary text-surface font-semibold text-sm rounded-xl hover:opacity-95 transition-all shadow-md flex items-center justify-center gap-2 group"
+                >
+                  <PhoneIncoming className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                  <span>Ring My Phone Now (Incoming Call)</span>
+                </button>
+              ) : (
+                <button
+                  onClick={handleStartOutgoingCall}
+                  className="w-full py-3.5 bg-accent text-surface font-semibold text-sm rounded-xl hover:opacity-95 transition-all shadow-md flex items-center justify-center gap-2 group"
+                >
+                  <Phone className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                  <span>Call AI Agent Now</span>
+                </button>
+              )}
             </div>
           )}
 
-          {/* PHASE 2, 3, 4, 5: LIVE CALL ACTIVE */}
+          {/* PHASE 2: INCOMING CALL RINGING SCREEN (Realistic Smartphone Look) */}
+          {phase === "incoming_ring" && (
+            <div className="py-6 sm:py-8 flex flex-col items-center justify-center space-y-6 text-center animate-fade-in">
+              <div className="relative">
+                {/* Pulsing incoming call waves */}
+                <span className="absolute -inset-4 rounded-full bg-secondary/20 animate-ping" />
+                <span className="absolute -inset-8 rounded-full bg-secondary/10 animate-pulse" />
+                <div className="relative w-24 h-24 rounded-full bg-secondary/15 border-2 border-secondary/40 flex items-center justify-center text-secondary shadow-lg">
+                  <PhoneIncoming className="w-10 h-10 animate-bounce" />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <span className="text-xs uppercase tracking-widest text-secondary font-bold animate-pulse">
+                  INCOMING CALL...
+                </span>
+                <h4 className="font-heading text-2xl font-bold text-ink">
+                  {companyName}
+                </h4>
+                <p className="text-xs text-muted font-medium">
+                  {agentVoiceName} · AI Sales Executive
+                </p>
+                <p className="font-mono text-sm text-ink font-semibold pt-1">
+                  {phoneNumber}
+                </p>
+              </div>
+
+              {/* Accept & Decline Buttons */}
+              <div className="flex items-center justify-center gap-8 pt-4 w-full">
+                {/* Decline Button */}
+                <div className="flex flex-col items-center gap-1.5">
+                  <button
+                    onClick={() => {
+                      if (ringtoneTimerRef.current) clearInterval(ringtoneTimerRef.current);
+                      setPhase("dialer");
+                    }}
+                    className="w-14 h-14 rounded-full bg-destructive text-surface flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-transform"
+                  >
+                    <PhoneOff className="w-6 h-6" />
+                  </button>
+                  <span className="text-[11px] text-muted font-medium">Decline</span>
+                </div>
+
+                {/* Accept Button */}
+                <div className="flex flex-col items-center gap-1.5">
+                  <button
+                    onClick={handleAnswerIncomingCall}
+                    className="w-16 h-16 rounded-full bg-secondary text-surface flex items-center justify-center shadow-xl hover:scale-110 active:scale-95 transition-transform animate-pulse border-2 border-surface"
+                  >
+                    <Phone className="w-7 h-7" />
+                  </button>
+                  <span className="text-xs text-secondary font-bold">Answer / Accept</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* PHASE 3, 4, 5, 6: ACTIVE CALL (GREETING, LISTENING, SPEAKING) */}
           {(phase === "connecting" ||
             phase === "greeting" ||
             phase === "listening" ||
             phase === "processing" ||
             phase === "speaking") && (
             <div className="space-y-4">
-              {/* Active Call Status Card */}
+              {/* Call Header Status Card */}
               <div className="bg-paper border border-border rounded-xl p-4 text-center space-y-2">
                 <div className="flex items-center justify-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-secondary animate-ping" />
                   <span className="font-mono text-sm font-semibold text-secondary">
-                    {phase === "connecting" ? "DIALING..." : formatDuration(callDuration)}
+                    {phase === "connecting" ? "CONNECTING..." : formatDuration(callDuration)}
                   </span>
                 </div>
 
                 <div className="font-heading text-lg font-bold text-ink">{companyName}</div>
                 <div className="text-xs text-muted font-mono">{phoneNumber}</div>
 
-                {/* Animated Voice Indicator */}
+                {/* Animated Voice Equalizer */}
                 <div className="pt-2 flex items-center justify-center gap-1.5 h-8">
                   {phase === "speaking" || phase === "greeting" ? (
                     <>
@@ -496,6 +689,17 @@ export function LiveCallModal({
                 <div className="text-xs font-medium text-ink bg-surface border border-border/80 px-3 py-1.5 rounded-lg inline-block shadow-xs">
                   {statusText}
                 </div>
+
+                {/* Unmute / Replay Banner if Autoplay Was Blocked */}
+                {audioBlocked && (
+                  <button
+                    onClick={handleManualPlayAudio}
+                    className="mt-2 w-full py-2 bg-accent text-surface text-xs font-semibold rounded-lg flex items-center justify-center gap-2 animate-bounce shadow-md"
+                  >
+                    <Volume2 className="w-4 h-4" />
+                    <span>Tap Here to Listen / Unmute Agent Voice</span>
+                  </button>
+                )}
               </div>
 
               {/* Live Conversation Transcript */}
@@ -583,7 +787,7 @@ export function LiveCallModal({
             </div>
           )}
 
-          {/* PHASE 6: CALL ENDED & SAVED */}
+          {/* PHASE 7: CALL ENDED & SAVED */}
           {phase === "ended" && (
             <div className="space-y-4 py-2 text-center">
               <div className="w-12 h-12 rounded-full bg-secondary/15 text-secondary border border-secondary/30 flex items-center justify-center mx-auto">
