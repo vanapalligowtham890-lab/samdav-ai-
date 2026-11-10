@@ -22,6 +22,12 @@ const FEMALE_NAMES = new Set([
 export function isLikelyFemale(name: string): boolean {
   if (!name) return false;
   const clean = name.toLowerCase().replace(/[^a-zA-Z\u0C00-\u0C7F]/g, " ").trim();
+  if (clean.includes("mother") || clean.includes("తల్లి") || clean.includes("అమ్మ") || clean.includes("devi") || clean.includes("దేవి") || clean.includes("madam") || clean.includes("మేడమ్") || clean.includes("aunty")) {
+    return true;
+  }
+  if (clean.includes("father") || clean.includes("తండ్రి") || clean.includes("రావు") || clean.includes("rao") || clean.includes("వర్మ") || clean.includes("varma") || clean.includes("కుమార్") || clean.includes("kumar") || clean.includes("రెడ్డి") || clean.includes("reddy") || clean.includes("నారాయణ") || clean.includes("narayana") || clean.includes("రమణ") || clean.includes("ramana")) {
+    return false;
+  }
   const tokens = clean.split(/\s+/);
   return tokens.some(t => FEMALE_NAMES.has(t));
 }
@@ -291,6 +297,7 @@ export interface SynthesizeDialogueOptions {
   transcript: string;
   customerName?: string;
   agentVoiceId?: string;
+  customerVoiceId?: string;
   companyName?: string;
   languageCode?: string;
   prospectId?: string;
@@ -299,7 +306,7 @@ export interface SynthesizeDialogueOptions {
 /**
  * Synthesizes a true two-party sales call dialogue:
  * - Agent speaks in agent's selected voice (e.g. Shivani).
- * - Customer speaks in a distinct contrasting customer voice (e.g. Avinash).
+ * - Customer speaks in a distinct contrasting customer voice (e.g. Avinash or Kalpana).
  * - Stitches each turn with natural conversational pauses into a single WAV file.
  */
 export async function synthesizeDialogueAudio(
@@ -315,7 +322,9 @@ export async function synthesizeDialogueAudio(
   const agentVoice = ALL_VOICES.find(v => v.id.toLowerCase() === agentVoiceId.toLowerCase()) || ALL_VOICES[0];
   const customerName = options.customerName || "Customer";
   const language = options.languageCode || agentVoice.language || "te-IN";
-  const customerVoice = resolveCustomerVoice(agentVoice, customerName, language);
+  const customerVoice = options.customerVoiceId
+    ? (ALL_VOICES.find(v => v.id.toLowerCase() === options.customerVoiceId?.toLowerCase()) || resolveCustomerVoice(agentVoice, customerName, language))
+    : resolveCustomerVoice(agentVoice, customerName, language);
 
   // 1. Parse dialogue turns
   const turns = parseDialogueTurns(options.transcript, agentVoice.name, customerName);
@@ -366,10 +375,11 @@ export async function synthesizeDialogueAudio(
       const turnDiskPath = path.join(process.cwd(), "public", turnResult.audioUrl.replace(/^\//, ""));
       if (fs.existsSync(turnDiskPath)) {
         const turnWavBuf = fs.readFileSync(turnDiskPath);
-        const pcm = extractPcmBytes(turnWavBuf);
+        let pcm = extractPcmBytes(turnWavBuf);
         if (pcm.length > 0) {
-          if (pcmChunks.length > 0) {
-            pcmChunks.push(pauseBetweenTurns); // Insert natural conversational pause between speakers
+          // Ensure 16-bit alignment (even byte count) to avoid phase-shift static noise
+          if (pcm.length % 2 !== 0) {
+            pcm = pcm.subarray(0, pcm.length - 1);
           }
           pcmChunks.push(pcm);
         }
