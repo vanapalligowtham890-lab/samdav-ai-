@@ -73,8 +73,8 @@ The platform supports 16+ verified Gnani Timbre voice personas categorized by re
 ### Setup & Run
 ```bash
 # 1. Clone the repository
-git clone https://github.com/vanapalligowtham890-lab/vaani-recap.git
-cd vaani-recap
+git clone https://github.com/vanapalligowtham890-lab/samdav-ai-.git
+cd samdav-ai-
 
 # 2. Install dependencies
 npm install
