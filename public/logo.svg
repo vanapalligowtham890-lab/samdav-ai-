@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <defs>
+    <linearGradient id="samvadBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b" />
+      <stop offset="100%" stop-color="#312e81" />
+    </linearGradient>
+    <linearGradient id="samvadAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1" />
+      <stop offset="50%" stop-color="#8b5cf6" />
+      <stop offset="100%" stop-color="#d946ef" />
+    </linearGradient>
+    <linearGradient id="samvadGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded Tile Base -->
+  <rect width="120" height="120" rx="28" fill="url(#samvadBg)" />
+  <rect x="2" y="2" width="116" height="116" rx="26" stroke="#4338ca" stroke-width="2" stroke-opacity="0.5" />
+
+  <!-- Neural Voice / Speech Soundwave Waves -->
+  <g transform="translate(18, 25)">
+    <!-- Speech Bubble Body -->
+    <path d="M12 14 C12 6.268 18.268 0 26 0 L58 0 C65.732 0 72 6.268 72 14 L72 40 C72 47.732 65.732 54 58 54 L32 54 L18 64 L20 54 L12 54 C4.268 54 -2 47.732 -2 40 Z" transform="translate(6, 4)" fill="#0f172a" fill-opacity="0.3" stroke="url(#samvadAccent)" stroke-width="2.5" />
+    
+    <!-- Dynamic Audio Waveforms inside -->
+    <rect x="22" y="24" width="4" height="18" rx="2" fill="url(#samvadGold)" />
+    <rect x="30" y="16" width="4" height="34" rx="2" fill="url(#samvadAccent)" />
+    <rect x="38" y="10" width="4" height="46" rx="2" fill="#ffffff" />
+    <rect x="46" y="18" width="4" height="30" rx="2" fill="url(#samvadAccent)" />
+    <rect x="54" y="26" width="4" height="14" rx="2" fill="url(#samvadGold)" />
+  </g>
+
+  <!-- AI Sparkle Icon -->
+  <path d="M96 22 L98 28 L104 30 L98 32 L96 38 L94 32 L88 30 L94 28 Z" fill="#fbbf24" />
+
+  <!-- Bottom Brand Text -->
+  <text x="60" y="112" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="8.5" font-weight="800" fill="#c7d2fe" text-anchor="middle" letter-spacing="2">SAMVAD AI</text>
+</svg>

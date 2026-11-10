@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { ALL_VOICES, VoiceDefinition } from "@/lib/voice-catalog";
+import { BrandLogo } from "@/components/brand-logo";
 
 function LoginForm() {
   const router = useRouter();
@@ -128,13 +129,7 @@ function LoginForm() {
         <BlurFade delay={0.05}>
           <div className="text-center space-y-2">
             <Link href="/" className="inline-flex items-center gap-2 group">
-              <div className="w-9 h-9 rounded-lg bg-surface border border-border/80 p-0.5 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform overflow-hidden">
-                <img
-                  src="/logo.png"
-                  alt="Samvad AI"
-                  className="w-full h-full object-contain"
-                />
-              </div>
+              <BrandLogo size="lg" className="group-hover:scale-105 transition-transform" />
               <span className="font-heading text-2xl font-bold tracking-tight text-ink">
                 Samvad AI
               </span>

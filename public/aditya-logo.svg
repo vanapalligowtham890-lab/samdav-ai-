@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <defs>
+    <linearGradient id="auBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f2b48" />
+      <stop offset="100%" stop-color="#1e3a8a" />
+    </linearGradient>
+    <linearGradient id="auGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+    <linearGradient id="auAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#e2e8f0" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="125%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.25" />
+    </filter>
+  </defs>
+
+  <!-- Base Rounded Shield / Tile -->
+  <rect width="120" height="120" rx="28" fill="url(#auBg)" />
+  <rect x="2" y="2" width="116" height="116" rx="26" stroke="url(#auGold)" stroke-width="2.5" stroke-opacity="0.4" />
+
+  <!-- Inner Academic Crest Shield -->
+  <g filter="url(#shadow)">
+    <!-- Shield Outline -->
+    <path d="M60 22 C78 22 88 28 88 38 C88 64 60 88 60 92 C60 88 32 64 32 38 C32 28 42 22 60 22 Z" fill="#0d2137" stroke="url(#auGold)" stroke-width="2.5" stroke-linejoin="round" />
+    
+    <!-- Central Golden Monogram / Pillar 'A' -->
+    <path d="M60 34 L74 68 L66 68 L62 58 L58 58 L54 68 L46 68 Z M60 44 L57 52 L63 52 Z" fill="url(#auGold)" />
+    
+    <!-- Academic Graduation Cap / Crest atop the A -->
+    <path d="M60 28 L72 34 L60 40 L48 34 Z" fill="url(#auGold)" />
+    <path d="M72 34 L72 40" stroke="url(#auGold)" stroke-width="1.5" stroke-linecap="round" />
+    <circle cx="72" cy="41" r="1.5" fill="#fbbf24" />
+
+    <!-- Open Book Foundation -->
+    <path d="M48 72 C54 70 59 71 60 73 C61 71 66 70 72 72 L72 78 C66 76 61 77 60 79 C59 77 54 76 48 78 Z" fill="url(#auAccent)" opacity="0.95" />
+    <line x1="60" y1="73" x2="60" y2="79" stroke="#0d2137" stroke-width="1.5" />
+  </g>
+
+  <!-- Stars of Excellence -->
+  <circle cx="38" cy="84" r="2" fill="#fbbf24" />
+  <circle cx="60" cy="100" r="2.5" fill="#fbbf24" />
+  <circle cx="82" cy="84" r="2" fill="#fbbf24" />
+
+  <!-- Bottom Label Ribbon -->
+  <text x="60" y="112" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="8.5" font-weight="800" fill="#fbbf24" text-anchor="middle" letter-spacing="1.5">ADITYA</text>
+</svg>

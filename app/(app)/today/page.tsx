@@ -469,6 +469,7 @@ export default function TodayDashboardPage() {
 
   const currentVoiceObj = ALL_VOICES.find((v) => v.id === voiceName) || ALL_VOICES[0];
   const activeLanguageObj = getLanguageMode(languageModeId);
+  const isAditya = companyName.toLowerCase().includes("aditya") || sectorName.toLowerCase().includes("aditya") || Boolean(user?.email?.toLowerCase().includes("vanapalligowtham9108"));
 
   return (
     <div className="space-y-8">
@@ -483,7 +484,7 @@ export default function TodayDashboardPage() {
               <span className="text-border">·</span>
               <span className="inline-flex items-center gap-1.5 text-xs font-mono bg-paper border border-border px-2.5 py-0.5 rounded text-ink">
                 <PhoneForwarded className="w-3 h-3 text-secondary" strokeWidth={1.5} />
-                Forwarding Caller ID: <strong className="text-ink">{forwardingNumber}</strong>
+                {isAditya ? "Admissions Helpline:" : "Forwarding Caller ID:"} <strong className="text-ink">{forwardingNumber}</strong>
               </span>
               <span className="text-border">·</span>
               <Link
@@ -499,14 +500,18 @@ export default function TodayDashboardPage() {
                 className="inline-flex items-center gap-1.5 text-xs bg-paper border border-border hover:border-accent px-2.5 py-0.5 rounded text-ink transition-colors"
               >
                 <Volume2 className="w-3 h-3 text-accent" strokeWidth={1.5} />
-                Agent Voice: <strong>{currentVoiceObj.name}</strong> ({currentVoiceObj.languageLabel})
+                Counselor Voice: <strong>{currentVoiceObj.name}</strong> ({currentVoiceObj.languageLabel})
               </button>
             </div>
             <h1 className="text-3xl sm:text-4xl font-heading text-ink">
-              {companyName} · AI Cold Call Agent
+              {isAditya ? "Aditya University · 24/7 AI Admissions Desk" : `${companyName} · AI Cold Call Agent`}
             </h1>
             <p className="text-xs text-muted mt-1">
-              Sector: <strong className="text-ink">{sectorName}</strong> · Outbound Campaign &amp; Lead Management
+              {isAditya ? (
+                <>Educational Sector: <strong className="text-ink">4-Year B.Tech Admissions &amp; Parent Counseling Desk</strong> · Surampalem Campus</>
+              ) : (
+                <>Sector: <strong className="text-ink">{sectorName}</strong> · Outbound Campaign &amp; Lead Management</>
+              )}
             </p>
           </div>
 
@@ -516,26 +521,26 @@ export default function TodayDashboardPage() {
               onClick={() => setScriptModalOpen(true)}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 bg-surface text-ink border border-border hover:border-accent px-3 py-2 rounded-lg text-xs font-medium transition-colors paper-shadow"
             >
-              <Sliders className="w-3.5 h-3.5 text-secondary" strokeWidth={1.5} /> Virtual Script &amp; Voice
+              <Sliders className="w-3.5 h-3.5 text-secondary" strokeWidth={1.5} /> {isAditya ? "Admissions Script & Voice" : "Virtual Script & Voice"}
             </button>
 
             <button
               onClick={() => setExcelModalOpen(true)}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 bg-surface text-ink border border-border hover:border-accent px-3 py-2 rounded-lg text-xs font-medium transition-colors paper-shadow"
             >
-              <FileSpreadsheet className="w-3.5 h-3.5 text-accent" strokeWidth={1.5} /> Upload Excel Sheet
+              <FileSpreadsheet className="w-3.5 h-3.5 text-accent" strokeWidth={1.5} /> {isAditya ? "Upload Parent Sheet" : "Upload Excel Sheet"}
             </button>
 
             <button
               onClick={() => {
-                setLiveCallTargetPhone(forwardingNumber || "+91 98490 22334");
+                setLiveCallTargetPhone(forwardingNumber || "+91 99897 76543");
                 setLiveCallModalOpen(true);
               }}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 bg-secondary text-surface px-4 py-2 rounded-lg text-xs font-semibold hover:opacity-90 transition-opacity shadow-xs border border-secondary"
-              title="Test talking live with the AI sales agent with your microphone"
+              title="Test talking live with the Admissions AI counselor with your microphone"
             >
               <PhoneCall className="w-3.5 h-3.5 animate-pulse" strokeWidth={2} />
-              <span>Live AI Call (Microphone)</span>
+              <span>{isAditya ? "Test Live Admissions Call (Mic)" : "Live AI Call (Microphone)"}</span>
             </button>
 
             <button
@@ -544,7 +549,7 @@ export default function TodayDashboardPage() {
               className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 bg-accent text-surface px-4 py-2 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity shadow-xs"
             >
               <PhoneOutgoing className="w-3.5 h-3.5" strokeWidth={1.5} />
-              {dialing ? `Dialing with ${currentVoiceObj.name}...` : "Dial Next Lead with Agent"}
+              {dialing ? `Connecting with ${currentVoiceObj.name}...` : (isAditya ? "Call Next Parent with Agent" : "Dial Next Lead with Agent")}
             </button>
           </div>
         </div>
@@ -558,7 +563,7 @@ export default function TodayDashboardPage() {
         </div>
       )}
 
-      {/* 2. THE 6 EXACT DASHBOARD METRICS: Ongoing, Answered, Closed, Rejected, Leads Won, Leads Lost */}
+      {/* 2. THE 6 EXACT DASHBOARD METRICS: Ongoing, Answered, Closed, Rescheduled, Seats Reserved, Under Review */}
       <BlurFade delay={0.1}>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {/* Ongoing Calls */}
@@ -570,7 +575,7 @@ export default function TodayDashboardPage() {
             <div className="font-heading text-3xl font-bold text-accent mt-2">
               <NumberTicker value={metrics.ongoing} />
             </div>
-            <span className="text-[10px] text-muted mt-1">Live speaking agent</span>
+            <span className="text-[10px] text-muted mt-1">{isAditya ? "Live parent counseling" : "Live speaking agent"}</span>
           </div>
 
           {/* Answered Calls */}
@@ -582,7 +587,7 @@ export default function TodayDashboardPage() {
             <div className="font-heading text-3xl font-bold text-ink mt-2">
               <NumberTicker value={metrics.answered} />
             </div>
-            <span className="text-[10px] text-muted mt-1">Connected with prospect</span>
+            <span className="text-[10px] text-muted mt-1">{isAditya ? "Connected with parent" : "Connected with prospect"}</span>
           </div>
 
           {/* Closed Calls */}
@@ -594,43 +599,43 @@ export default function TodayDashboardPage() {
             <div className="font-heading text-3xl font-bold text-ink mt-2">
               <NumberTicker value={metrics.closed} />
             </div>
-            <span className="text-[10px] text-muted mt-1">Conversations finalized</span>
+            <span className="text-[10px] text-muted mt-1">{isAditya ? "Counseling concluded" : "Conversations finalized"}</span>
           </div>
 
-          {/* Rejected / Busy Calls */}
+          {/* Rescheduled / Callback */}
           <div className="bg-surface border border-border p-4 rounded-lg paper-shadow flex flex-col justify-between">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted font-medium">Calls Rejected</span>
+              <span className="text-xs text-muted font-medium">{isAditya ? "Callback Requested" : "Calls Rejected"}</span>
               <PhoneOff className="w-3.5 h-3.5 text-muted" strokeWidth={1.5} />
             </div>
             <div className="font-heading text-3xl font-bold text-muted mt-2">
               <NumberTicker value={metrics.rejected} />
             </div>
-            <span className="text-[10px] text-muted mt-1">Busy or declined</span>
+            <span className="text-[10px] text-muted mt-1">{isAditya ? "Scheduled for follow-up" : "Busy or declined"}</span>
           </div>
 
-          {/* Leads Won */}
+          {/* Seats Reserved / Admissions Confirmed */}
           <div className="bg-surface border border-secondary/30 p-4 rounded-lg paper-shadow flex flex-col justify-between bg-secondary/5">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-secondary font-semibold">Leads Won</span>
+              <span className="text-xs text-secondary font-semibold">{isAditya ? "Seats Reserved" : "Leads Won"}</span>
               <Trophy className="w-4 h-4 text-secondary" strokeWidth={1.5} />
             </div>
             <div className="font-heading text-3xl font-bold text-secondary mt-2">
               <NumberTicker value={metrics.leadsWon} />
             </div>
-            <span className="text-[10px] text-secondary/80 mt-1">Agreed to follow-up</span>
+            <span className="text-[10px] text-secondary/80 mt-1">{isAditya ? "Admissions confirmed" : "Agreed to follow-up"}</span>
           </div>
 
-          {/* Leads Rejected / Lost */}
+          {/* Under Review / Deferred */}
           <div className="bg-surface border border-border p-4 rounded-lg paper-shadow flex flex-col justify-between">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted font-medium">Leads Rejected</span>
+              <span className="text-xs text-muted font-medium">{isAditya ? "Under Review" : "Leads Rejected"}</span>
               <XCircle className="w-3.5 h-3.5 text-muted" strokeWidth={1.5} />
             </div>
             <div className="font-heading text-3xl font-bold text-muted mt-2">
               <NumberTicker value={metrics.leadsLost} />
             </div>
-            <span className="text-[10px] text-muted mt-1">Not interested</span>
+            <span className="text-[10px] text-muted mt-1">{isAditya ? "Awaiting EAPCET round" : "Not interested"}</span>
           </div>
         </div>
       </BlurFade>
@@ -644,9 +649,13 @@ export default function TodayDashboardPage() {
                 <Volume2 className="w-5 h-5" strokeWidth={1.5} />
               </div>
               <div>
-                <h2 className="font-heading text-xl text-ink">Spoken evening voice recap</h2>
+                <h2 className="font-heading text-xl text-ink">
+                  {isAditya ? "Admissions Evening Voice Brief" : "Spoken evening voice recap"}
+                </h2>
                 <p className="text-xs text-muted">
-                  Spoken brief synthesized with Gnani Timbre ({recap?.voice || voiceName})
+                  {isAditya
+                    ? `Daily admissions committee summary synthesized with Gnani Timbre (${recap?.voice || voiceName})`
+                    : `Spoken brief synthesized with Gnani Timbre (${recap?.voice || voiceName})`}
                 </p>
               </div>
             </div>
@@ -1075,8 +1084,17 @@ export default function TodayDashboardPage() {
                           }`}
                         >
                           {isOngoing && <span className="w-1.5 h-1.5 rounded-full bg-accent animate-ping" />}
-                          {prospect.call_status.toUpperCase()}
-                          {prospect.outcome !== "pending" && ` · ${prospect.outcome.toUpperCase()}`}
+                          {isAditya
+                            ? isOngoing
+                              ? "LIVE COUNSELING"
+                              : isWon
+                              ? "SEAT RESERVED"
+                              : isRejected
+                              ? "UNDER REVIEW"
+                              : isQueued
+                              ? "SCHEDULED OUTREACH"
+                              : "COUNSELING CONCLUDED"
+                            : `${prospect.call_status.toUpperCase()}${prospect.outcome !== "pending" ? ` · ${prospect.outcome.toUpperCase()}` : ""}`}
                         </span>
 
                         {/* Individual Dial Button if Queued */}
@@ -1087,7 +1105,7 @@ export default function TodayDashboardPage() {
                             className="text-xs bg-secondary text-surface border border-secondary hover:opacity-90 px-3 py-1.5 rounded font-semibold transition-all shadow-xs inline-flex items-center gap-1 cursor-pointer"
                           >
                             <PhoneOutgoing className="w-3 h-3" />
-                            <span>Dial Parent</span>
+                            <span>{isAditya ? "Call Parent" : "Dial"}</span>
                           </button>
                         )}
 
@@ -1208,9 +1226,13 @@ export default function TodayDashboardPage() {
           </div>
 
           <div className="bg-paper border border-border rounded-lg p-4 space-y-2 text-xs text-muted">
-            <span className="font-semibold text-ink block">Synthetic Dialing Workflow:</span>
+            <span className="font-semibold text-ink block">{isAditya ? "Parent Outreach & Counseling Workflow:" : "Synthetic Dialing Workflow:"}</span>
             <p className="leading-relaxed">
-              When an Excel prospect is dialed, the agent speaks using <strong>{currentVoiceObj.name}&apos;s voice</strong> via Gnani Timbre, routes with your verified forwarding number (<strong>{forwardingNumber}</strong>), saves the audio, and logs the outcome to Firebase.
+              {isAditya ? (
+                <>When a parent inquiry is dialed, the admissions officer speaks in <strong>{currentVoiceObj.name}&apos;s voice</strong> via Gnani Timbre, routes with your verified helpline caller ID (<strong>{forwardingNumber}</strong>), records the parent&apos;s course and hostel preferences, and logs the counseling status.</>
+              ) : (
+                <>When an Excel prospect is dialed, the agent speaks using <strong>{currentVoiceObj.name}&apos;s voice</strong> via Gnani Timbre, routes with your verified forwarding number (<strong>{forwardingNumber}</strong>), saves the audio, and logs the outcome to Firebase.</>
+              )}
             </p>
           </div>
         </aside>

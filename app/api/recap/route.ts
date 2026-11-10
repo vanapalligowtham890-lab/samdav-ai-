@@ -32,37 +32,55 @@ export async function POST(req: NextRequest) {
 
     let spokenText = "";
 
+    const isAditya = companyName.toLowerCase().includes("aditya");
+
     // Generate concise brief (under 50 words) customized to the chosen Language Mode
     switch (languageSetting) {
       case "te-IN": // Pure Telugu
         if (campaignCalls.length === 0) {
-          spokenText = `${companyName} లో ఈరోజు కొత్త కాల్స్ ఏమీ రాలేదు. మీ కస్టమర్ లీడ్స్ అన్నీ సిద్ధంగా ఉన్నాయి. ధన్యవాదాలు.`;
+          spokenText = isAditya
+            ? `ఆదిత్య యూనివర్సిటీలో ఈరోజు కొత్త అడ్మిషన్ కాల్స్ ఏమీ రాలేదు. పేరెంట్ ఎంక్వైరీ వివరాలు సిద్ధంగా ఉన్నాయి. ధన్యవాదాలు.`
+            : `${companyName} లో ఈరోజు కొత్త కాల్స్ ఏమీ రాలేదు. మీ కస్టమర్ లీడ్స్ అన్నీ సిద్ధంగా ఉన్నాయి. ధన్యవాదాలు.`;
         } else {
-          spokenText = `${companyName} సేల్స్ రీక్యాప్: ఈరోజు ${wonCount} హాట్ లీడ్స్ కన్ఫర్మ్ అయ్యాయి. ${cleanName} గారితో సంభాషణ విజయవంతమైంది. కస్టమర్ మాట: "${keyQuote}". పూర్తి వివరాలు పోర్టల్‌లో ఉన్నాయి. ధన్యవాదాలు.`;
+          spokenText = isAditya
+            ? `ఆదిత్య యూనివర్సిటీ అడ్మిషన్స్ బ్రీఫ్: ఈరోజు ${wonCount} B.Tech సీట్లు మరియు అడ్మిషన్లు కన్ఫర్మ్ అయ్యాయి. ${cleanName} గారితో కౌన్సెలింగ్ పూర్తయింది. పూర్తి వివరాలు పోర్టల్‌లో ఉన్నాయి. ధన్యవాదాలు.`
+            : `${companyName} సేల్స్ రీక్యాప్: ఈరోజు ${wonCount} హాట్ లీడ్స్ కన్ఫర్మ్ అయ్యాయి. ${cleanName} గారితో సంభాషణ విజయవంతమైంది. కస్టమర్ మాట: "${keyQuote}". పూర్తి వివరాలు పోర్టల్‌లో ఉన్నాయి. ధన్యవాదాలు.`;
         }
         break;
 
       case "hi-en": // Hinglish (Hindi + English)
         if (campaignCalls.length === 0) {
-          spokenText = `${companyName} mein aaj koi new calls nahi the. Saari leads up to date hain. Thank you.`;
+          spokenText = isAditya
+            ? `Aditya University admissions desk me aaj koi new inquiries nahi the. Sabhi records updated hain. Thank you.`
+            : `${companyName} mein aaj koi new calls nahi the. Saari leads up to date hain. Thank you.`;
         } else {
-          spokenText = `${companyName} Sales Recap: Aaj total ${wonCount} hot leads close hui hain. ${cleanName} ji ke saath conversation successfully complete hua. Call recordings portal pe ready hain. Thank you.`;
+          spokenText = isAditya
+            ? `Aditya University Admissions Recap: Aaj total ${wonCount} B.Tech admissions confirm hue hain. ${cleanName} ji ke saath counseling complete hua. Recordings portal pe available hain. Thank you.`
+            : `${companyName} Sales Recap: Aaj total ${wonCount} hot leads close hui hain. ${cleanName} ji ke saath conversation successfully complete hua. Call recordings portal pe ready hain. Thank you.`;
         }
         break;
 
       case "hi-IN": // Pure Hindi
         if (campaignCalls.length === 0) {
-          spokenText = `${companyName} में आज कोई नई कॉल प्राप्त नहीं हुई। आपकी सभी लीड्स अपडेट हैं। धन्यवाद।`;
+          spokenText = isAditya
+            ? `आदित्य यूनिवर्सिटी एडमिशन डेस्क पर आज कोई नई पूछताछ दर्ज नहीं हुई। सभी विवरण अद्यतन हैं। धन्यवाद।`
+            : `${companyName} में आज कोई नई कॉल प्राप्त नहीं हुई। आपकी सभी लीड्स अपडेट हैं। धन्यवाद।`;
         } else {
-          spokenText = `${companyName} दैनिक बिक्री रिपोर्ट: आज ${wonCount} मुख्य ग्राहक लीड्स सफलतापूर्वक प्राप्त हुईं। ${cleanName} जी के साथ बातचीत सकारात्मक रही। संपूर्ण रिकॉर्डिंग्स पोर्टल पर उपलब्ध हैं। धन्यवाद।`;
+          spokenText = isAditya
+            ? `आदित्य यूनिवर्सिटी दैनिक प्रवेश रिपोर्ट: आज ${wonCount} बीटेक प्रवेश और सीटें सुनिश्चित की गईं। ${cleanName} जी के साथ परामर्श सकारात्मक रहा। धन्यवाद।`
+            : `${companyName} दैनिक बिक्री रिपोर्ट: आज ${wonCount} मुख्य ग्राहक लीड्स सफलतापूर्वक प्राप्त हुईं। ${cleanName} जी के साथ बातचीत सकारात्मक रही। संपूर्ण रिकॉर्डिंग्स पोर्टल पर उपलब्ध हैं। धन्यवाद।`;
         }
         break;
 
       case "en-IN": // Indian Corporate English
         if (campaignCalls.length === 0) {
-          spokenText = `No new outbound calls recorded today for ${companyName}. All customer prospects are updated. Thank you.`;
+          spokenText = isAditya
+            ? `No new admissions calls recorded today for Aditya University. All parent inquiries are updated. Thank you.`
+            : `No new outbound calls recorded today for ${companyName}. All customer prospects are updated. Thank you.`;
         } else {
-          spokenText = `${companyName} Sales Brief: A total of ${wonCount} high-intent client deals were confirmed today. Discussion with ${cleanName} was successful. Detailed call recordings are available in your portal. Thank you.`;
+          spokenText = isAditya
+            ? `Aditya University Admissions Brief: A total of ${wonCount} B.Tech admissions and counseling sessions were confirmed today. Discussion with ${cleanName} was completed successfully. Detailed recordings are available in your portal. Thank you.`
+            : `${companyName} Sales Brief: A total of ${wonCount} high-intent client deals were confirmed today. Discussion with ${cleanName} was successful. Detailed call recordings are available in your portal. Thank you.`;
         }
         break;
 
@@ -109,9 +127,13 @@ export async function POST(req: NextRequest) {
       case "te-en": // High-English Telugu (Default)
       default:
         if (campaignCalls.length === 0) {
-          spokenText = `${companyName} లో ఈరోజు new calls ఏమీ లేవు. Leads అన్నీ up to date ఉన్నాయి. Thank you!`;
+          spokenText = isAditya
+            ? `Aditya University Admissions Desk లో ఈరోజు new inquiries ఏమీ లేవు. Records అన్నీ up to date ఉన్నాయి. Thank you!`
+            : `${companyName} లో ఈరోజు new calls ఏమీ లేవు. Leads అన్నీ up to date ఉన్నాయి. Thank you!`;
         } else {
-          spokenText = `${companyName} Evening Sales Recap: ఈరోజు ${wonCount} high-intent leads confirm అయ్యాయి. ${cleanName} గారితో call successful గా పూర్తయింది. Detailed recordings portal లో live గా ఉన్నాయి. Thank you!`;
+          spokenText = isAditya
+            ? `Aditya University Admissions Daily Brief: ఈరోజు ${wonCount} B.Tech admissions confirm అయ్యాయి. ${cleanName} గారితో counseling call complete అయింది. Detailed recordings portal లో live గా ఉన్నాయి. Thank you!`
+            : `${companyName} Evening Sales Recap: ఈరోజు ${wonCount} high-intent leads confirm అయ్యాయి. ${cleanName} గారితో call successful గా పూర్తయింది. Detailed recordings portal లో live గా ఉన్నాయి. Thank you!`;
         }
         break;
     }

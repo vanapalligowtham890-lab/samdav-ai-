@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { ALL_VOICES, VoiceDefinition } from "@/lib/voice-catalog";
 import { useAuth } from "@/lib/auth-context";
+import { BrandLogo } from "@/components/brand-logo";
 
 export default function LandingPage() {
   const { user, logout } = useAuth();
@@ -119,13 +120,7 @@ export default function LandingPage() {
       <header className="border-b border-border bg-surface/90 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
-            <div className="w-8 h-8 rounded-lg bg-surface border border-border/80 p-0.5 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform shrink-0 overflow-hidden">
-              <img
-                src="/logo.png"
-                alt="Samvad AI"
-                className="w-full h-full object-contain"
-              />
-            </div>
+            <BrandLogo size="md" className="group-hover:scale-105 transition-transform" />
             <div className="shrink-0 flex flex-col justify-center">
               <span className="font-heading text-base sm:text-lg font-bold tracking-tight text-ink leading-tight whitespace-nowrap">
                 Samvad AI

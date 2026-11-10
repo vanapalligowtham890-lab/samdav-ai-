@@ -20,6 +20,7 @@ import Link from "next/link";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { ALL_VOICES, VoiceDefinition } from "@/lib/voice-catalog";
 import { LANGUAGE_MODES, getLanguageMode } from "@/lib/languages";
+import { BrandLogo } from "@/components/brand-logo";
 
 const PREDEFINED_SECTORS = [
   { value: "Aditya University - B.Tech Admissions & Parent Desk", label: "Aditya University - B.Tech Admissions & Parent Desk" },
@@ -105,9 +106,7 @@ export default function SetupPage() {
   if (authLoading) {
     return (
       <div className="min-h-screen bg-paper flex flex-col items-center justify-center space-y-3">
-        <div className="w-10 h-10 rounded-lg bg-surface border border-border/80 p-1 flex items-center justify-center shadow-xs animate-pulse">
-          <img src="/logo.png" alt="Samvad AI" className="w-full h-full object-contain" />
-        </div>
+        <BrandLogo size="lg" className="animate-pulse" />
         <p className="text-xs text-muted font-medium">Loading setup session...</p>
       </div>
     );

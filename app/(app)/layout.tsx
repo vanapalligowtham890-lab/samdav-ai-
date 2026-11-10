@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { LiveCallModal } from "@/components/live-call-modal";
+import { BrandLogo } from "@/components/brand-logo";
 
 export default function AppLayout({
   children,
@@ -67,9 +68,7 @@ export default function AppLayout({
   if (loading) {
     return (
       <div className="min-h-screen bg-paper flex flex-col items-center justify-center space-y-3">
-        <div className="w-10 h-10 rounded-lg bg-surface border border-border/80 p-1 flex items-center justify-center shadow-xs animate-pulse">
-          <img src="/logo.png" alt="Samvad AI" className="w-full h-full object-contain" />
-        </div>
+        <BrandLogo isAditya={false} size="lg" className="animate-pulse" />
         <p className="text-xs text-muted font-medium">Verifying user authorization...</p>
       </div>
     );
@@ -109,13 +108,7 @@ export default function AppLayout({
           <div className="flex items-center gap-4 lg:gap-6 shrink-0">
             {/* Logo & Brand */}
             <Link href="/today" className="flex items-center gap-2.5 group shrink-0">
-              <div className="w-8 h-8 rounded-lg bg-surface border border-border/80 p-0.5 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform shrink-0 overflow-hidden">
-                <img
-                  src="/logo.png"
-                  alt={isAdityaUser ? "Aditya University" : "Samvad AI"}
-                  className="w-full h-full object-contain"
-                />
-              </div>
+              <BrandLogo isAditya={isAdityaUser} size="md" className="group-hover:scale-105 transition-transform" />
               <div className="flex flex-col justify-center shrink-0">
                 <span className="font-heading text-base sm:text-lg font-bold tracking-tight text-ink leading-tight whitespace-nowrap">
                   {isAdityaUser ? "Aditya University" : "Samvad AI"}

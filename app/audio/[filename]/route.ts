@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
+export { GET as HEAD };
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ filename: string }> }
