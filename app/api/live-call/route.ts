@@ -6,6 +6,7 @@ import { ALL_VOICES } from "@/lib/voice-catalog";
 import { synthesizeSpeech, transcribe } from "@/lib/gnani";
 import { generateLiveAgentTurnReply, extractLeadFromTranscript } from "@/lib/llm";
 import { synthesizeDialogueAudio } from "@/lib/dialogue-synthesizer";
+import { convertToStandardWav } from "@/lib/audio";
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,23 +18,10 @@ export async function POST(req: NextRequest) {
       const audioFile = formData.get("audio") as File | null;
       const historyJson = (formData.get("history") as string) || "[]";
       const customPhone = (formData.get("phoneNumber") as string) || "+91 98765 43210";
+      const directText = (formData.get("text") as string) || "";
 
       let history: { speaker: "agent" | "customer"; text: string }[] = [];
       try { history = JSON.parse(historyJson); } catch {}
-
-      if (!audioFile) {
-        return NextResponse.json({ error: "No audio file received" }, { status: 400 });
-      }
-
-      const uploadDir = path.join(process.cwd(), "data", "uploads");
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
-
-      const tempFilename = `live_turn_${Date.now()}_${Math.random().toString(36).slice(2, 6)}.webm`;
-      const tempPath = path.join(uploadDir, tempFilename);
-      const buffer = Buffer.from(await audioFile.arrayBuffer());
-      fs.writeFileSync(tempPath, buffer);
 
       // Load Business & Voice Settings
       const savedVoice = (db.prepare("SELECT value FROM settings WHERE key = 'voice'").get() as any)?.value || "Shivani";
@@ -43,13 +31,31 @@ export async function POST(req: NextRequest) {
       const savedTimbreLang = (db.prepare("SELECT value FROM settings WHERE key = 'timbre_language'").get() as any)?.value;
       const language = savedTimbreLang || voiceDef.language || "te-IN";
 
-      // A. Transcribe User Speech via Gnani Prisma v3.0
-      let customerText = "";
-      try {
-        const prismaRes = await transcribe(tempPath, language);
-        customerText = prismaRes.transcript.trim();
-      } catch (sttErr: any) {
-        console.warn("Prisma live STT error:", sttErr);
+      let customerText = directText.trim();
+
+      // If no direct text, transcribe user microphone audio via Gnani Prisma v3.0
+      if (!customerText && audioFile) {
+        const uploadDir = path.join(process.cwd(), "data", "uploads");
+        if (!fs.existsSync(uploadDir)) {
+          fs.mkdirSync(uploadDir, { recursive: true });
+        }
+
+        const tempFilename = `live_turn_${Date.now()}_${Math.random().toString(36).slice(2, 6)}.webm`;
+        const tempPath = path.join(uploadDir, tempFilename);
+        const wavPath = tempPath.replace(/\.webm$/, ".wav");
+        const buffer = Buffer.from(await audioFile.arrayBuffer());
+        fs.writeFileSync(tempPath, buffer);
+
+        // Convert browser WebM audio to standard 16kHz PCM WAV for Gnani Prisma STT
+        await convertToStandardWav(tempPath, wavPath);
+        const targetPath = fs.existsSync(wavPath) ? wavPath : tempPath;
+
+        try {
+          const prismaRes = await transcribe(targetPath, language);
+          customerText = prismaRes.transcript.trim();
+        } catch (sttErr: any) {
+          console.warn("Prisma live STT error:", sttErr);
+        }
       }
 
       if (!customerText) {

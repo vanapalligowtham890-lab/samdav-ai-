@@ -63,6 +63,28 @@ export async function getAudioDuration(filePath: string): Promise<number> {
 }
 
 /**
+ * Converts any browser recorded audio (webm, ogg, mp4, etc.) to a standard
+ * 16kHz mono 16-bit PCM WAV file required by Gnani Prisma v3.0 STT.
+ */
+export async function convertToStandardWav(inputPath: string, outputPath: string): Promise<string> {
+  const ffmpeg = getFfmpegPath();
+  try {
+    await execFileAsync(ffmpeg, [
+      "-y",
+      "-i", inputPath,
+      "-ar", "16000",
+      "-ac", "1",
+      "-c:a", "pcm_s16le",
+      outputPath,
+    ]);
+    return outputPath;
+  } catch (err) {
+    console.warn("ffmpeg WAV conversion failed:", err);
+    return inputPath;
+  }
+}
+
+/**
  * Splits audio file into chunks <= maxDurationSeconds if audio exceeds that duration.
  * Prisma REST API maximum audio length is 30s (we use chunk length 28s).
  */

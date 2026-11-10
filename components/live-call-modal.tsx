@@ -397,10 +397,63 @@ export function LiveCallModal({
     }
   };
 
+  // Submit turn via direct text or quick-question prompt
+  const handleSendTurnPrompt = async (text: string) => {
+    if (!text.trim()) return;
+    setPhase("processing");
+    setStatusText("Processing speech inquiry...");
+
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      try {
+        mediaRecorderRef.current.stop();
+        mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
+      } catch {}
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("history", JSON.stringify(turns));
+      formData.append("phoneNumber", phoneNumber);
+      formData.append("text", text);
+
+      setStatusText("Gemini reasoning & Gnani Timbre synthesizing voice reply...");
+
+      const res = await fetch("/api/live-call", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) throw new Error(`Turn failed with status ${res.status}`);
+      const data = await res.json();
+
+      const userText = data.customerText || text;
+      const agentReply = data.agentReply || "ధన్యవాదాలు అండి.";
+
+      setTurns((prev) => [
+        ...prev,
+        { speaker: "customer", text: userText },
+        { speaker: "agent", text: agentReply },
+      ]);
+
+      setPhase("speaking");
+      setStatusText(`${agentVoiceName} is speaking...`);
+
+      playAgentAudio(data.audioUrl, () => {
+        startListening();
+      });
+    } catch (turnErr: any) {
+      console.error("Turn error:", turnErr);
+      setStatusText("Could not process speech inquiry.");
+      setTimeout(() => startListening(), 1500);
+    }
+  };
+
   // Submit fallback text response
   const handleSendTextFallback = () => {
     if (!textInputFallback.trim()) return;
-    handleDoneSpeaking();
+    const txt = textInputFallback;
+    setTextInputFallback("");
+    handleSendTurnPrompt(txt);
   };
 
   // End Call & Save full conversation into SQLite calls & leads
@@ -755,6 +808,30 @@ export function LiveCallModal({
                       <span>Done Speaking / Send to AI</span>
                     </button>
                   </div>
+                  {/* Quick 1-click inquiries if mic is noisy or not working */}
+                  <div className="space-y-1.5 pt-1">
+                    <span className="text-[10px] text-muted font-medium flex items-center gap-1">
+                      <span>⚡ Mic not working? Tap any question to hear AI reply:</span>
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                      {[
+                        "నమస్కారం, పూర్తి వివరాలు మరియు ఛార్జీలు చెప్పగలరా?",
+                        "రేపు ఉదయం 11 గంటలకు అపాయింట్‌మెంట్ దొరుకుతుందా?",
+                        "What are your service packages and pricing?",
+                        "Can we schedule a consultation call tomorrow?",
+                      ].map((promptText, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => handleSendTurnPrompt(promptText)}
+                          className="text-[11px] bg-paper hover:bg-surface border border-border hover:border-accent text-ink px-2.5 py-1.5 rounded-lg transition-colors text-left truncate shadow-2xs"
+                        >
+                          💬 {promptText}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   {/* Fallback keyboard input in case mic is muted or quiet environment */}
                   <div className="flex gap-2">
                     <input
