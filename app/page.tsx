@@ -22,6 +22,7 @@ import { BrandLogo } from "@/components/brand-logo";
 
 export default function LandingPage() {
   const { user, logout } = useAuth();
+  const isAdityaUser = user?.email?.toLowerCase().includes("vanapalligowtham9108") || false;
 
   const [selectedVoice, setSelectedVoice] = useState<VoiceDefinition>(ALL_VOICES[0]);
   const [voiceFilter, setVoiceFilter] = useState("all");
@@ -120,13 +121,13 @@ export default function LandingPage() {
       <header className="border-b border-border bg-surface/90 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
-            <BrandLogo size="md" className="group-hover:scale-105 transition-transform" />
+            <BrandLogo isAditya={isAdityaUser} size="md" className="group-hover:scale-105 transition-transform" />
             <div className="shrink-0 flex flex-col justify-center">
               <span className="font-heading text-base sm:text-lg font-bold tracking-tight text-ink leading-tight whitespace-nowrap">
-                Samvad AI
+                {isAdityaUser ? "Aditya University" : "Samvad AI"}
               </span>
               <span className="text-[10px] text-muted font-medium tracking-wide whitespace-nowrap">
-                Gnani Prisma &amp; Timbre
+                {isAdityaUser ? "B.Tech Admissions Desk" : "Gnani Prisma & Timbre"}
               </span>
             </div>
           </Link>

@@ -7,10 +7,10 @@ export { GET as HEAD };
 export async function GET() {
   try {
     const logoPaths = [
-      path.join(process.cwd(), "public", "logo.svg"),
       path.join(process.cwd(), "public", "logo.png"),
-      path.join(process.cwd(), "app", "icon.png"),
       path.join(process.cwd(), "public", "icon.png"),
+      path.join(process.cwd(), "app", "icon.png"),
+      path.join(process.cwd(), "public", "logo.svg"),
     ];
 
     for (const p of logoPaths) {
