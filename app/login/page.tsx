@@ -163,6 +163,32 @@ function LoginForm() {
               </div>
             )}
 
+            {/* Aditya University 24/7 Admissions Desk Credentials Helper */}
+            <div className="bg-secondary/10 border border-secondary/30 rounded-lg p-3.5 text-xs space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-secondary flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" /> Aditya University Admissions Desk
+                </span>
+                <span className="text-[10px] bg-secondary/20 text-secondary px-2 py-0.5 rounded font-mono font-bold">
+                  B.Tech 24/7 Desk
+                </span>
+              </div>
+              <div className="font-mono text-[11px] text-ink/80 space-y-0.5 bg-paper/80 p-2 rounded border border-border/60">
+                <p>Email: <strong className="text-ink">vanapalligowtham9108@gmail.com</strong></p>
+                <p>Password: <strong className="text-ink">aditya@1234</strong></p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail("vanapalligowtham9108@gmail.com");
+                  setPassword("aditya@1234");
+                }}
+                className="w-full text-center py-1.5 bg-secondary text-surface text-xs font-semibold rounded hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+              >
+                1-Click Autofill Aditya University Login
+              </button>
+            </div>
+
             {error && (
               <div className="bg-destructive/10 border border-destructive/20 text-destructive text-xs p-3 rounded-md flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" strokeWidth={1.5} />

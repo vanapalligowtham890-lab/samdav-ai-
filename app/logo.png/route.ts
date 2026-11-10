@@ -28,3 +28,4 @@ export async function GET() {
     return new NextResponse(`Error: ${err.message}`, { status: 500 });
   }
 }
+

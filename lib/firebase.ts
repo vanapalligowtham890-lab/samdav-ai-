@@ -53,6 +53,19 @@ export interface UserCompanySetup {
   updatedAt?: string;
 }
 
+export const ADITYA_ADMIN_EMAIL = "vanapalligowtham9108@gmail.com";
+export const ADITYA_ADMIN_PASS = "aditya@1234";
+
+export const ADITYA_UNIVERSITY_DEFAULT_SETUP: UserCompanySetup = {
+  companyName: "Aditya University",
+  companyType: "Aditya University - B.Tech Admissions & Parent Desk",
+  forwardingNumber: "+91 99897 76543",
+  voice: "Shivani",
+  language: "te-en",
+  completed: true,
+  updatedAt: new Date().toISOString(),
+};
+
 const LOCAL_USERS_KEY = "vaani_users_mock";
 const LOCAL_CURRENT_USER_KEY = "vaani_current_user_mock";
 const LOCAL_SETUP_KEY = "vaani_setup_mock";
@@ -96,6 +109,35 @@ export async function fetchRealtimeDb(subPath: string): Promise<any> {
  * Sign up a new user with Email and Password
  */
 export async function signUpUser(email: string, pass: string): Promise<{ user: any; isNew: boolean }> {
+  const normEmail = email.toLowerCase().trim();
+
+  // Special pre-configured account for Aditya University
+  if (normEmail === ADITYA_ADMIN_EMAIL) {
+    const adityaUser = {
+      uid: "aditya_admin_vanapalligowtham9108",
+      email: ADITYA_ADMIN_EMAIL,
+      displayName: "Aditya University Admissions Administrator",
+    };
+    if (typeof window !== "undefined") {
+      localStorage.setItem(LOCAL_CURRENT_USER_KEY, JSON.stringify(adityaUser));
+      const rawUsers = localStorage.getItem(LOCAL_USERS_KEY);
+      const users = rawUsers ? JSON.parse(rawUsers) : {};
+      users[normEmail] = { ...adityaUser, password: pass };
+      localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(users));
+      localStorage.setItem(`${LOCAL_SETUP_KEY}_${adityaUser.uid}`, JSON.stringify(ADITYA_UNIVERSITY_DEFAULT_SETUP));
+    }
+    syncRealtimeDb(`users/${adityaUser.uid}/profile`, {
+      email: ADITYA_ADMIN_EMAIL,
+      college: "Aditya University",
+      course: "4-Year B.Tech Admissions",
+      campus: "Surampalem, AP",
+      role: "24/7 Admissions Officer",
+      createdAt: new Date().toISOString(),
+    });
+    syncRealtimeDb(`users/${adityaUser.uid}/setup`, ADITYA_UNIVERSITY_DEFAULT_SETUP);
+    return { user: adityaUser, isNew: false };
+  }
+
   if (auth && isFirebaseConfigured) {
     try {
       const res = await createUserWithEmailAndPassword(auth, email, pass);
@@ -144,6 +186,55 @@ export async function signUpUser(email: string, pass: string): Promise<{ user: a
  * Log in an existing user with Email and Password
  */
 export async function loginUser(email: string, pass: string): Promise<any> {
+  const normEmail = email.toLowerCase().trim();
+  const isAdityaLogin = normEmail === ADITYA_ADMIN_EMAIL && pass === ADITYA_ADMIN_PASS;
+
+  // 1. Guaranteed Instant Login for Aditya University Admissions Administrator
+  if (isAdityaLogin) {
+    const adityaUser = {
+      uid: "aditya_admin_vanapalligowtham9108",
+      email: ADITYA_ADMIN_EMAIL,
+      displayName: "Aditya University Admissions Administrator",
+    };
+
+    if (typeof window !== "undefined") {
+      localStorage.setItem(LOCAL_CURRENT_USER_KEY, JSON.stringify(adityaUser));
+      const rawUsers = localStorage.getItem(LOCAL_USERS_KEY);
+      const users = rawUsers ? JSON.parse(rawUsers) : {};
+      users[normEmail] = { ...adityaUser, password: pass };
+      localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(users));
+      localStorage.setItem(`${LOCAL_SETUP_KEY}_${adityaUser.uid}`, JSON.stringify(ADITYA_UNIVERSITY_DEFAULT_SETUP));
+    }
+
+    // Sync to Realtime DB
+    syncRealtimeDb(`users/${adityaUser.uid}/setup`, ADITYA_UNIVERSITY_DEFAULT_SETUP);
+    syncRealtimeDb(`users/${adityaUser.uid}/profile`, {
+      email: ADITYA_ADMIN_EMAIL,
+      college: "Aditya University",
+      course: "4-Year B.Tech Admissions",
+      campus: "Surampalem, AP",
+      role: "24/7 Admissions Officer",
+      updatedAt: new Date().toISOString(),
+    });
+
+    // Also attempt Firebase Auth in background if configured
+    if (auth && isFirebaseConfigured) {
+      try {
+        const res = await signInWithEmailAndPassword(auth, email, pass);
+        return res.user;
+      } catch (err: any) {
+        if (err.code === "auth/user-not-found" || err.code === "auth/invalid-credential") {
+          try {
+            const newRes = await createUserWithEmailAndPassword(auth, email, pass);
+            return newRes.user;
+          } catch {}
+        }
+      }
+    }
+
+    return adityaUser;
+  }
+
   if (auth && isFirebaseConfigured) {
     const res = await signInWithEmailAndPassword(auth, email, pass);
     return res.user;
@@ -212,6 +303,10 @@ export async function saveCompanySetup(userId: string, setup: UserCompanySetup):
  * Fetch company setup for user
  */
 export async function getCompanySetup(userId: string): Promise<UserCompanySetup | null> {
+  if (userId === "aditya_admin_vanapalligowtham9108") {
+    return ADITYA_UNIVERSITY_DEFAULT_SETUP;
+  }
+
   // Try fetching from Firebase Realtime Database
   const remote = await fetchRealtimeDb(`users/${userId}/setup`);
   if (remote) return remote;

@@ -95,6 +95,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setSessionCookie(true);
     const userSetup = await getCompanySetup(loggedInUser.uid);
     setSetup(userSetup);
+
+    // Auto-initialize Aditya University B.Tech parent outreach campaign if signing in as Aditya Admin
+    if (email.toLowerCase().trim() === "vanapalligowtham9108@gmail.com") {
+      try {
+        await fetch("/api/settings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            business_name: "Aditya University",
+            business_type: "Aditya University - B.Tech Admissions & Parent Desk",
+            forwarding_number: "+91 99897 76543",
+            voice: "Shivani",
+            language: "te-en",
+          }),
+        });
+      } catch (e) {
+        console.warn("Auto-seeding Aditya campaign warning:", e);
+      }
+    }
   };
 
   const signup = async (email: string, pass: string) => {

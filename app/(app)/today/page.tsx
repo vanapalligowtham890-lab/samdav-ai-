@@ -22,7 +22,11 @@ import {
   Sliders, 
   Download,
   RotateCcw,
-  Globe
+  Globe,
+  BarChart3,
+  GraduationCap,
+  Calendar,
+  Check
 } from "lucide-react";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { NumberTicker } from "@/components/ui/number-ticker";
@@ -41,7 +45,76 @@ interface RecapData {
 }
 
 export default function TodayDashboardPage() {
-  const { setup } = useAuth();
+  const { setup, user } = useAuth();
+
+  // Calling List Tab Filter (Upcoming vs Recorded vs All)
+  const [callingListTab, setCallingListTab] = useState<"upcoming" | "recorded" | "all">("upcoming");
+
+  // Ongoing Polls State (Live Parent Inquiries & Campus Preferences)
+  const [polls, setPolls] = useState([
+    {
+      id: "poll_branch",
+      title: "Preferred 4-Year B.Tech Branch (Aditya University)",
+      category: "Academic Curriculum",
+      totalVotes: 312,
+      options: [
+        { id: "opt_aiml", text: "B.Tech CSE (AI & Machine Learning)", votes: 150 },
+        { id: "opt_cse", text: "B.Tech Computer Science & Engineering (Core)", votes: 97 },
+        { id: "opt_ds", text: "B.Tech Data Science & Cyber Security", votes: 41 },
+        { id: "opt_ece", text: "B.Tech Electronics & Communication (ECE)", votes: 24 },
+      ],
+      userVotedOption: undefined as string | undefined,
+    },
+    {
+      id: "poll_hostel",
+      title: "Hostel & Accommodation Preference (Surampalem Campus)",
+      category: "Campus Facilities",
+      totalVotes: 298,
+      options: [
+        { id: "opt_ac", text: "Aditya On-Campus AC Hostels (Separate Boys & Girls)", votes: 167 },
+        { id: "opt_nonac", text: "Standard Non-AC Hostels", votes: 77 },
+        { id: "opt_bus", text: "Day-Scholar College Bus (Kakinada / Rajahmundry)", votes: 54 },
+      ],
+      userVotedOption: undefined as string | undefined,
+    },
+    {
+      id: "poll_visit",
+      title: "Upcoming Campus Open House & Document Verification",
+      category: "Admissions Desk Schedule",
+      totalVotes: 340,
+      options: [
+        { id: "opt_sat", text: "Visiting Surampalem Campus This Saturday (10 AM)", votes: 218 },
+        { id: "opt_next", text: "Visiting Next Week", votes: 85 },
+        { id: "opt_online", text: "Virtual Parent Counseling Only", votes: 37 },
+      ],
+      userVotedOption: undefined as string | undefined,
+    },
+  ]);
+
+  const handleVotePoll = (pollId: string, optionId: string) => {
+    setPolls((prev) =>
+      prev.map((poll) => {
+        if (poll.id !== pollId) return poll;
+        const alreadyVoted = poll.userVotedOption === optionId;
+        const updatedOptions = poll.options.map((opt) => {
+          if (opt.id === optionId) {
+            return { ...opt, votes: opt.votes + (alreadyVoted ? -1 : 1) };
+          }
+          if (opt.id === poll.userVotedOption) {
+            return { ...opt, votes: Math.max(0, opt.votes - 1) };
+          }
+          return opt;
+        });
+        const total = updatedOptions.reduce((acc, curr) => acc + curr.votes, 0);
+        return {
+          ...poll,
+          totalVotes: total,
+          options: updatedOptions,
+          userVotedOption: alreadyVoted ? undefined : optionId,
+        };
+      })
+    );
+  };
 
   // Campaign State & Metrics
   const [prospects, setProspects] = useState<ColdCallProspect[]>([]);
@@ -54,10 +127,10 @@ export default function TodayDashboardPage() {
     leadsWon: 0,
     leadsLost: 0,
   });
-  const [forwardingNumber, setForwardingNumber] = useState(setup?.forwardingNumber || "+91 98765 43210");
+  const [forwardingNumber, setForwardingNumber] = useState(setup?.forwardingNumber || "+91 99897 76543");
   const [voiceName, setVoiceName] = useState(setup?.voice || "Shivani");
-  const [companyName, setCompanyName] = useState(setup?.companyName || "Ishiva digital");
-  const [sectorName, setSectorName] = useState(setup?.companyType || "Digital Marketing & Agency");
+  const [companyName, setCompanyName] = useState(setup?.companyName || "Aditya University");
+  const [sectorName, setSectorName] = useState(setup?.companyType || "Aditya University - B.Tech Admissions & Parent Desk");
   const [languageModeId, setLanguageModeId] = useState(setup?.language || "te-en");
 
   // Recap State
@@ -75,10 +148,10 @@ export default function TodayDashboardPage() {
   const [excelModalOpen, setExcelModalOpen] = useState(false);
   const [scriptModalOpen, setScriptModalOpen] = useState(false);
   const [liveCallModalOpen, setLiveCallModalOpen] = useState(false);
-  const [liveCallTargetPhone, setLiveCallTargetPhone] = useState("+91 98490 22334");
+  const [liveCallTargetPhone, setLiveCallTargetPhone] = useState("+91 99897 76543");
   const [uploadingExcel, setUploadingExcel] = useState(false);
   const [activeScript, setActiveScript] = useState<VirtualScript>(
-    DEFAULT_VIRTUAL_SCRIPTS.telugu_high_english || DEFAULT_VIRTUAL_SCRIPTS.telugu_general
+    DEFAULT_VIRTUAL_SCRIPTS.aditya_admissions || DEFAULT_VIRTUAL_SCRIPTS.telugu_high_english
   );
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -126,7 +199,24 @@ export default function TodayDashboardPage() {
   useEffect(() => {
     fetchCampaignData();
     fetchRecap();
-  }, []);
+
+    // If logged in as Aditya University Administrator, ensure the Aditya campaign is active
+    if (user?.email?.toLowerCase().includes("vanapalligowtham9108")) {
+      fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          business_name: "Aditya University",
+          business_type: "Aditya University - B.Tech Admissions & Parent Desk",
+          forwarding_number: "+91 99897 76543",
+          voice: "Shivani",
+          language: "te-en",
+        }),
+      }).then(() => {
+        fetchCampaignData();
+      }).catch(() => {});
+    }
+  }, [user]);
 
   const togglePlayRecap = () => {
     if (isPlayingRecap && audioRecapRef.current) {
@@ -617,17 +707,262 @@ export default function TodayDashboardPage() {
         </section>
       </BlurFade>
 
-      {/* 4. Active Cold Call Portal & Individual Dialing */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Wide Left: Prospects List with Individual Dial & Audio Player */}
-        <div className="lg:col-span-8 space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="font-heading text-xl text-ink">Active cold call list</h2>
-              <p className="text-xs text-muted">
-                Each call synthesizes the conversation using <strong className="text-ink">{currentVoiceObj.name}</strong> ({currentVoiceObj.languageLabel}) and transcribes with Prisma.
+      {/* 4. WHICH AGENT IS ACTIVATING & WHAT IS THE VOICE (College AI Agent Status) */}
+      <BlurFade delay={0.18}>
+        <div className="bg-surface border border-secondary/30 rounded-xl p-5 sm:p-6 paper-shadow relative overflow-hidden bg-gradient-to-br from-surface via-surface to-secondary/5 space-y-4">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-border/80 pb-4">
+            <div className="flex items-start gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-secondary/10 border border-secondary/20 flex items-center justify-center text-secondary shrink-0 shadow-xs">
+                <GraduationCap className="w-6 h-6" strokeWidth={1.75} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[10px] uppercase tracking-wider font-bold bg-secondary text-surface px-2.5 py-0.5 rounded-full">
+                    Active Agent
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 text-xs text-secondary font-semibold">
+                    <span className="w-2 h-2 rounded-full bg-secondary animate-ping" />
+                    Live &amp; Activating 24/7
+                  </span>
+                  <span className="text-border">·</span>
+                  <span className="text-xs font-mono text-muted">
+                    Surampalem Campus, AP
+                  </span>
+                </div>
+                <h2 className="font-heading text-xl sm:text-2xl text-ink font-bold mt-1">
+                  Aditya University · 24/7 B.Tech Admissions &amp; Parent Desk Officer
+                </h2>
+                <p className="text-xs text-muted mt-0.5">
+                  Autonomous outreach and parent advisory assistant for 4-year B.Tech programs (CSE, AI &amp; ML, Data Science, ECE, Mechanical, IT)
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 self-start lg:self-auto flex-wrap">
+              <button
+                onClick={() => {
+                  setLiveCallTargetPhone(forwardingNumber || "+91 99897 76543");
+                  setLiveCallModalOpen(true);
+                }}
+                className="inline-flex items-center gap-1.5 bg-secondary text-surface px-4 py-2.5 rounded-lg text-xs font-semibold hover:opacity-90 transition-opacity shadow-xs border border-secondary"
+              >
+                <PhoneCall className="w-3.5 h-3.5 animate-pulse" strokeWidth={2} />
+                <span>Test Live Call with Agent</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+            {/* Activating Agent Info */}
+            <div className="bg-paper/80 border border-border/80 p-3.5 rounded-lg space-y-1">
+              <span className="text-[10px] uppercase tracking-wider text-muted font-semibold block">
+                Which Agent Is Activating
+              </span>
+              <p className="font-heading text-sm text-ink font-bold">
+                Aditya Admissions Officer
+              </p>
+              <p className="text-[11px] text-muted">
+                Status: <strong className="text-secondary font-semibold">Activating 24/7 for Parents</strong>
               </p>
             </div>
+
+            {/* Voice Engine & Persona */}
+            <div className="bg-paper/80 border border-border/80 p-3.5 rounded-lg space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] uppercase tracking-wider text-muted font-semibold block">
+                  What Is The Voice
+                </span>
+                <span className="text-[10px] font-mono text-accent bg-accent/10 px-1.5 py-0.2 rounded font-semibold">
+                  Gnani Timbre v3.0
+                </span>
+              </div>
+              <p className="font-heading text-sm text-ink font-bold flex items-center gap-1.5">
+                <Volume2 className="w-3.5 h-3.5 text-accent" />
+                {currentVoiceObj.name} ({currentVoiceObj.gender})
+              </p>
+              <p className="text-[11px] text-muted">
+                Dialect: <strong className="text-ink">{currentVoiceObj.languageLabel}</strong> (Empathetic Tone)
+              </p>
+            </div>
+
+            {/* Speech Recognition (STT) */}
+            <div className="bg-paper/80 border border-border/80 p-3.5 rounded-lg space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] uppercase tracking-wider text-muted font-semibold block">
+                  Parent Speech STT
+                </span>
+                <span className="text-[10px] font-mono text-secondary bg-secondary/10 px-1.5 py-0.2 rounded font-semibold">
+                  Gnani Prisma v3.0
+                </span>
+              </div>
+              <p className="font-heading text-sm text-ink font-bold">
+                Telugu &amp; Indian English
+              </p>
+              <p className="text-[11px] text-muted">
+                Code: <strong className="text-ink font-mono">te-IN</strong> (Real-time VAD)
+              </p>
+            </div>
+
+            {/* Helpline & Forwarding */}
+            <div className="bg-paper/80 border border-border/80 p-3.5 rounded-lg space-y-1">
+              <span className="text-[10px] uppercase tracking-wider text-muted font-semibold block">
+                Admissions Caller ID
+              </span>
+              <p className="font-mono text-sm text-ink font-bold flex items-center gap-1.5">
+                <PhoneForwarded className="w-3.5 h-3.5 text-secondary" />
+                {forwardingNumber}
+              </p>
+              <p className="text-[11px] text-muted">
+                Campus: Surampalem (08852-252243)
+              </p>
+            </div>
+          </div>
+        </div>
+      </BlurFade>
+
+      {/* 5. ONGOING POLLS & PARENT PREFERENCE SURVEYS */}
+      <BlurFade delay={0.2}>
+        <div className="bg-surface border border-border rounded-xl p-5 sm:p-6 paper-shadow space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/80 pb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center text-accent">
+                <BarChart3 className="w-5 h-5" strokeWidth={1.5} />
+              </div>
+              <div>
+                <h3 className="font-heading text-lg sm:text-xl text-ink font-semibold flex items-center gap-2">
+                  <span>Ongoing Polls · Parent Inquiries &amp; Preferences</span>
+                  <span className="text-[10px] bg-secondary/15 text-secondary px-2 py-0.5 rounded-full font-mono font-bold">
+                    Live Updates
+                  </span>
+                </h3>
+                <p className="text-xs text-muted">
+                  Aggregated in real-time from automated parent calls and counseling desk interactions
+                </p>
+              </div>
+            </div>
+            <span className="text-xs text-muted bg-paper px-2.5 py-1 rounded border border-border font-mono self-start sm:self-auto">
+              Total Responses: {polls.reduce((acc, p) => acc + p.totalVotes, 0)}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {polls.map((poll) => (
+              <div key={poll.id} className="bg-paper/70 border border-border rounded-lg p-4 space-y-3 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between text-[11px] text-muted mb-1">
+                    <span className="uppercase tracking-wider font-semibold text-secondary">{poll.category}</span>
+                    <span className="font-mono">{poll.totalVotes} votes</span>
+                  </div>
+                  <h4 className="font-heading text-sm font-semibold text-ink leading-snug">
+                    {poll.title}
+                  </h4>
+                </div>
+
+                <div className="space-y-2 pt-1">
+                  {poll.options.map((option) => {
+                    const pct = poll.totalVotes > 0 ? Math.round((option.votes / poll.totalVotes) * 100) : 0;
+                    const isVoted = poll.userVotedOption === option.id;
+
+                    return (
+                      <div
+                        key={option.id}
+                        onClick={() => handleVotePoll(poll.id, option.id)}
+                        className={`group p-2 rounded-md border text-xs cursor-pointer transition-all ${
+                          isVoted
+                            ? "border-secondary bg-secondary/10 shadow-xs"
+                            : "border-border/80 bg-surface hover:border-accent"
+                        }`}
+                        title="Click to register parent response in this poll"
+                      >
+                        <div className="flex items-center justify-between font-medium mb-1">
+                          <span className="text-ink flex items-center gap-1.5 truncate max-w-[190px]">
+                            {isVoted && <Check className="w-3 h-3 text-secondary shrink-0" />}
+                            {option.text}
+                          </span>
+                          <span className="font-mono text-[11px] text-muted shrink-0">
+                            {pct}% ({option.votes})
+                          </span>
+                        </div>
+                        <div className="w-full bg-paper rounded-full h-1.5 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${
+                              isVoted ? "bg-secondary" : "bg-accent/75 group-hover:bg-accent"
+                            }`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <p className="text-[10px] text-muted italic pt-1">
+                  💡 Click any option above to cast an updated parent vote.
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </BlurFade>
+
+      {/* 6. CALLING LIST PORTAL WITH FILTER TABS (Upcoming vs Recorded vs All) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Wide Left: Calling Lists with Tabs */}
+        <div className="lg:col-span-8 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/80 pb-3">
+            {/* TABS */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                onClick={() => setCallingListTab("upcoming")}
+                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  callingListTab === "upcoming"
+                    ? "bg-secondary text-surface shadow-xs font-bold ring-1 ring-secondary"
+                    : "bg-surface text-ink hover:bg-paper border border-border"
+                }`}
+              >
+                <Calendar className="w-3.5 h-3.5" />
+                <span>📋 Upcoming Calling List</span>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                  callingListTab === "upcoming" ? "bg-surface/25 text-surface" : "bg-paper text-muted"
+                }`}>
+                  {prospects.filter((p) => p.call_status === "queued").length}
+                </span>
+              </button>
+
+              <button
+                onClick={() => setCallingListTab("recorded")}
+                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  callingListTab === "recorded"
+                    ? "bg-secondary text-surface shadow-xs font-bold ring-1 ring-secondary"
+                    : "bg-surface text-ink hover:bg-paper border border-border"
+                }`}
+              >
+                <Volume2 className="w-3.5 h-3.5" />
+                <span>🎙️ Recorded Calling List</span>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                  callingListTab === "recorded" ? "bg-surface/25 text-surface" : "bg-paper text-muted"
+                }`}>
+                  {prospects.filter((p) => p.call_status === "closed" || p.call_status === "ongoing").length}
+                </span>
+              </button>
+
+              <button
+                onClick={() => setCallingListTab("all")}
+                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  callingListTab === "all"
+                    ? "bg-secondary text-surface shadow-xs font-bold ring-1 ring-secondary"
+                    : "bg-surface text-ink hover:bg-paper border border-border"
+                }`}
+              >
+                <span>📊 All Contacts</span>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                  callingListTab === "all" ? "bg-surface/25 text-surface" : "bg-paper text-muted"
+                }`}>
+                  {prospects.length}
+                </span>
+              </button>
+            </div>
+
             <div className="flex items-center gap-3">
               <button
                 onClick={handleResetDemoData}
@@ -636,131 +971,165 @@ export default function TodayDashboardPage() {
               >
                 <RotateCcw className="w-3 h-3" /> Reset list
               </button>
-              <span className="text-xs text-muted font-mono bg-paper border border-border px-2 py-0.5 rounded">
-                {prospects.length} prospects
-              </span>
             </div>
           </div>
 
           <AnimatedList delay={40}>
-            {prospects.map((prospect) => {
-              const isPlaying = playingCallId === prospect.id;
-              const isWon = prospect.outcome === "won";
-              const isOngoing = prospect.call_status === "ongoing";
-              const isRejected = prospect.call_status === "rejected" || prospect.outcome === "lost";
-              const isQueued = prospect.call_status === "queued";
+            {(() => {
+              const upcomingProspects = prospects.filter((p) => p.call_status === "queued");
+              const recordedProspects = prospects.filter((p) => p.call_status === "closed" || p.call_status === "ongoing");
+              const displayed =
+                callingListTab === "upcoming"
+                  ? upcomingProspects
+                  : callingListTab === "recorded"
+                  ? recordedProspects
+                  : prospects;
 
-              return (
-                <article
-                  key={prospect.id}
-                  className={`bg-surface border rounded-lg p-5 paper-shadow paper-shadow-hover space-y-3 transition-colors ${
-                    isOngoing ? "border-accent bg-accent/5 ring-1 ring-accent" : "border-border"
-                  }`}
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/70 pb-3">
-                    <div className="flex items-center gap-3">
-                      {prospect.call_status !== "queued" ? (
-                        <button
-                          onClick={() => togglePlayCallAudio(prospect)}
-                          disabled={loadingAudioId === prospect.id}
-                          aria-label={isPlaying ? "Pause call audio" : "Play call audio"}
-                          title={loadingAudioId === prospect.id ? `Synthesizing ${voiceName}'s voice...` : (isPlaying ? "Pause call audio" : `Play recording in ${voiceName}'s voice`)}
-                          className="w-9 h-9 rounded-full bg-paper border border-border hover:border-accent text-accent flex items-center justify-center shrink-0 transition-colors shadow-xs"
-                        >
-                          {loadingAudioId === prospect.id ? (
-                            <RefreshCw className="w-4 h-4 animate-spin text-accent" strokeWidth={1.5} />
-                          ) : isPlaying ? (
-                            <Pause className="w-4 h-4 fill-current" strokeWidth={1.5} />
-                          ) : (
-                            <Play className="w-4 h-4 fill-current ml-0.5" strokeWidth={1.5} />
-                          )}
-                        </button>
-                      ) : (
-                        <div className="w-9 h-9 rounded-full bg-paper border border-border flex items-center justify-center text-muted shrink-0">
-                          <PhoneCall className="w-4 h-4" strokeWidth={1.5} />
-                        </div>
-                      )}
-
-                      <div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-heading text-lg text-ink font-medium">
-                            {prospect.name}
-                          </h3>
-                          <span className="text-xs font-mono text-muted bg-paper px-2 py-0.5 rounded border border-border">
-                            {prospect.phone}
-                          </span>
-                        </div>
-                        <p className="text-xs text-muted mt-0.5">{prospect.need}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 self-start sm:self-auto">
-                      {/* Call Status Badge */}
-                      <span
-                        className={`text-[11px] font-medium px-2 py-0.5 rounded-full border inline-flex items-center gap-1 ${
-                          isOngoing
-                            ? "bg-accent/10 text-accent border-accent/20 animate-pulse"
-                            : isWon
-                            ? "bg-secondary/15 text-secondary border-secondary/30"
-                            : isRejected
-                            ? "bg-destructive/10 text-destructive border-destructive/20"
-                            : "bg-paper text-muted border-border"
-                        }`}
-                      >
-                        {isOngoing && <span className="w-1.5 h-1.5 rounded-full bg-accent animate-ping" />}
-                        {prospect.call_status.toUpperCase()}
-                        {prospect.outcome !== "pending" && ` · ${prospect.outcome.toUpperCase()}`}
-                      </span>
-
-                      {/* Individual Dial Button if Queued */}
-                      {isQueued && (
-                        <button
-                          onClick={() => handleDialNext(prospect.id)}
-                          disabled={dialing}
-                          className="text-xs bg-paper border border-border hover:border-accent text-accent px-2.5 py-1 rounded font-medium transition-colors"
-                        >
-                          Dial
-                        </button>
-                      )}
-
-                      {prospect.duration_seconds > 0 && (
-                        <span className="text-[11px] text-muted font-mono">
-                          {prospect.duration_seconds}s
-                        </span>
-                      )}
-                    </div>
+              if (displayed.length === 0) {
+                return (
+                  <div className="bg-surface border border-border rounded-lg p-8 text-center space-y-2">
+                    <p className="text-sm font-medium text-ink">
+                      {callingListTab === "upcoming"
+                        ? "No upcoming calls queued."
+                        : "No recorded calls yet."}
+                    </p>
+                    <p className="text-xs text-muted">
+                      {callingListTab === "upcoming"
+                        ? "Upload an Excel sheet of parent contacts or click Dial Next to queue new calls."
+                        : "Dial upcoming parent contacts with the AI agent to generate authentic call recordings."}
+                    </p>
                   </div>
+                );
+              }
 
-                  {/* Verbatim Transcript */}
-                  {prospect.transcript && (
-                    <div className="space-y-1">
-                      <span className="text-[10px] uppercase tracking-wider text-muted font-medium block">
-                        Verbatim Speech-to-Text Conversation
-                      </span>
-                      <p className="telugu-text text-xs text-ink leading-[1.8] bg-paper p-3 rounded border border-border whitespace-pre-line">
-                        {prospect.transcript}
-                      </p>
-                    </div>
-                  )}
+              return displayed.map((prospect) => {
+                const isPlaying = playingCallId === prospect.id;
+                const isWon = prospect.outcome === "won";
+                const isOngoing = prospect.call_status === "ongoing";
+                const isRejected = prospect.call_status === "rejected" || prospect.outcome === "lost";
+                const isQueued = prospect.call_status === "queued";
 
-                  {/* Key Quote / Intent */}
-                  {prospect.key_quote && (
-                    <div className="flex items-start justify-between gap-3 text-xs bg-paper/60 p-2.5 rounded border border-border/60">
-                      <div className="flex items-start gap-1.5 text-ink">
-                        <Volume2 className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" strokeWidth={1.5} />
-                        <span className="telugu-quote italic">&ldquo;{prospect.key_quote}&rdquo;</span>
+                return (
+                  <article
+                    key={prospect.id}
+                    className={`bg-surface border rounded-lg p-5 paper-shadow paper-shadow-hover space-y-3 transition-colors ${
+                      isOngoing ? "border-accent bg-accent/5 ring-1 ring-accent" : "border-border"
+                    }`}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/70 pb-3">
+                      <div className="flex items-center gap-3">
+                        {prospect.call_status !== "queued" ? (
+                          <button
+                            onClick={() => togglePlayCallAudio(prospect)}
+                            disabled={loadingAudioId === prospect.id}
+                            aria-label={isPlaying ? "Pause call audio" : "Play call audio"}
+                            title={loadingAudioId === prospect.id ? `Synthesizing ${voiceName}'s voice...` : (isPlaying ? "Pause call audio" : `Play recording in ${voiceName}'s voice`)}
+                            className="w-9 h-9 rounded-full bg-paper border border-border hover:border-accent text-accent flex items-center justify-center shrink-0 transition-colors shadow-xs"
+                          >
+                            {loadingAudioId === prospect.id ? (
+                              <RefreshCw className="w-4 h-4 animate-spin text-accent" strokeWidth={1.5} />
+                            ) : isPlaying ? (
+                              <Pause className="w-4 h-4 fill-current" strokeWidth={1.5} />
+                            ) : (
+                              <Play className="w-4 h-4 fill-current ml-0.5" strokeWidth={1.5} />
+                            )}
+                          </button>
+                        ) : (
+                          <div className="w-9 h-9 rounded-full bg-paper border border-border flex items-center justify-center text-secondary shrink-0">
+                            <Calendar className="w-4 h-4" strokeWidth={1.5} />
+                          </div>
+                        )}
+
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="font-heading text-lg text-ink font-medium">
+                              {prospect.name}
+                            </h3>
+                            <span className="text-xs font-mono text-muted bg-paper px-2 py-0.5 rounded border border-border">
+                              {prospect.phone}
+                            </span>
+                            {prospect.call_time && (
+                              <span className="text-[10px] font-mono text-secondary bg-secondary/10 border border-secondary/20 px-2 py-0.5 rounded font-medium">
+                                {prospect.call_time}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted mt-0.5">{prospect.need}</p>
+                          {prospect.notes && (
+                            <p className="text-[11px] text-muted/80 mt-0.5 italic">Note: {prospect.notes}</p>
+                          )}
+                        </div>
                       </div>
-                      <button
-                        onClick={() => copyQuote(prospect.key_quote!, prospect.id)}
-                        className="text-[11px] text-accent hover:underline shrink-0"
-                      >
-                        {copiedId === prospect.id ? "Copied" : "Copy"}
-                      </button>
+
+                      <div className="flex items-center gap-2 self-start sm:self-auto">
+                        {/* Call Status Badge */}
+                        <span
+                          className={`text-[11px] font-medium px-2 py-0.5 rounded-full border inline-flex items-center gap-1 ${
+                            isOngoing
+                              ? "bg-accent/10 text-accent border-accent/20 animate-pulse"
+                              : isWon
+                              ? "bg-secondary/15 text-secondary border-secondary/30"
+                              : isRejected
+                              ? "bg-destructive/10 text-destructive border-destructive/20"
+                              : "bg-paper text-muted border-border"
+                          }`}
+                        >
+                          {isOngoing && <span className="w-1.5 h-1.5 rounded-full bg-accent animate-ping" />}
+                          {prospect.call_status.toUpperCase()}
+                          {prospect.outcome !== "pending" && ` · ${prospect.outcome.toUpperCase()}`}
+                        </span>
+
+                        {/* Individual Dial Button if Queued */}
+                        {isQueued && (
+                          <button
+                            onClick={() => handleDialNext(prospect.id)}
+                            disabled={dialing}
+                            className="text-xs bg-secondary text-surface border border-secondary hover:opacity-90 px-3 py-1.5 rounded font-semibold transition-all shadow-xs inline-flex items-center gap-1 cursor-pointer"
+                          >
+                            <PhoneOutgoing className="w-3 h-3" />
+                            <span>Dial Parent</span>
+                          </button>
+                        )}
+
+                        {prospect.duration_seconds > 0 && (
+                          <span className="text-[11px] text-muted font-mono">
+                            {prospect.duration_seconds}s
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  )}
-                </article>
-              );
-            })}
+
+                    {/* Verbatim Transcript */}
+                    {prospect.transcript && (
+                      <div className="space-y-1">
+                        <span className="text-[10px] uppercase tracking-wider text-muted font-medium block">
+                          Verbatim Speech-to-Text Conversation
+                        </span>
+                        <p className="telugu-text text-xs text-ink leading-[1.8] bg-paper p-3 rounded border border-border whitespace-pre-line">
+                          {prospect.transcript}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Key Quote / Intent */}
+                    {prospect.key_quote && (
+                      <div className="flex items-start justify-between gap-3 text-xs bg-paper/60 p-2.5 rounded border border-border/60">
+                        <div className="flex items-start gap-1.5 text-ink">
+                          <Volume2 className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" strokeWidth={1.5} />
+                          <span className="telugu-quote italic">&ldquo;{prospect.key_quote}&rdquo;</span>
+                        </div>
+                        <button
+                          onClick={() => copyQuote(prospect.key_quote!, prospect.id)}
+                          className="text-[11px] text-accent hover:underline shrink-0"
+                        >
+                          {copiedId === prospect.id ? "Copied" : "Copy"}
+                        </button>
+                      </div>
+                    )}
+                  </article>
+                );
+              });
+            })()}
           </AnimatedList>
         </div>
 
@@ -810,6 +1179,31 @@ export default function TodayDashboardPage() {
               >
                 Configure settings &amp; caller ID &rarr;
               </Link>
+            </div>
+          </div>
+
+          {/* Aditya University Admissions Desk Card */}
+          <div className="bg-surface border border-secondary/30 rounded-lg p-5 paper-shadow space-y-3 bg-secondary/5">
+            <div className="flex items-center gap-2 text-secondary font-heading font-semibold text-sm">
+              <GraduationCap className="w-4 h-4" />
+              <span>Aditya University B.Tech Desk</span>
+            </div>
+            <div className="space-y-2 text-[11px] text-muted leading-relaxed">
+              <p>
+                <strong className="text-ink">Campus:</strong> Surampalem, Near Kakinada, AP
+              </p>
+              <p>
+                <strong className="text-ink">Degree Programs:</strong> 4-Year B.Tech (CSE, AI&amp;ML, Data Science, ECE, EEE, Mech, Civil, IT)
+              </p>
+              <p>
+                <strong className="text-ink">Placements:</strong> 3,000+ Offers (Amazon ₹33+ LPA, Cisco, TCS, Infosys)
+              </p>
+              <p>
+                <strong className="text-ink">Hostels:</strong> On-Campus AC &amp; Non-AC (Separate Boys &amp; Girls)
+              </p>
+              <p>
+                <strong className="text-ink">Admissions Helpline:</strong> +91 99897 76543 (24/7 Available)
+              </p>
             </div>
           </div>
 

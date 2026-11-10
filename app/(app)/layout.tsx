@@ -99,6 +99,8 @@ export default function AppLayout({
   }
 
   // 3. Authenticated: Render Dashboard layout
+  const isAdityaUser = user?.email?.toLowerCase().includes("vanapalligowtham9108") || setup?.companyName?.toLowerCase().includes("aditya");
+
   return (
     <div className="min-h-screen flex flex-col bg-paper text-ink">
       {/* Top Navigation */}
@@ -110,16 +112,16 @@ export default function AppLayout({
               <div className="w-8 h-8 rounded-lg bg-surface border border-border/80 p-0.5 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform shrink-0 overflow-hidden">
                 <img
                   src="/logo.png"
-                  alt="Samvad AI"
+                  alt={isAdityaUser ? "Aditya University" : "Samvad AI"}
                   className="w-full h-full object-contain"
                 />
               </div>
               <div className="flex flex-col justify-center shrink-0">
                 <span className="font-heading text-base sm:text-lg font-bold tracking-tight text-ink leading-tight whitespace-nowrap">
-                  Samvad AI
+                  {isAdityaUser ? "Aditya University" : "Samvad AI"}
                 </span>
                 <span className="text-[10px] text-muted font-medium tracking-wide whitespace-nowrap">
-                  Gnani Prisma &amp; Timbre
+                  {isAdityaUser ? "24/7 B.Tech Admissions Desk" : "Gnani Prisma &amp; Timbre"}
                 </span>
               </div>
             </Link>
@@ -159,6 +161,11 @@ export default function AppLayout({
 
             {/* User Account / Auth State */}
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              {isAdityaUser && (
+                <span className="hidden lg:inline-flex items-center gap-1 text-[10px] bg-secondary/15 text-secondary border border-secondary/30 px-2 py-0.5 rounded-full font-semibold">
+                  Aditya Desk
+                </span>
+              )}
               <span 
                 className="text-xs text-ink font-medium hidden md:inline-block max-w-[140px] truncate bg-paper border border-border px-2.5 py-1 rounded shrink-0 whitespace-nowrap"
                 title={user.email || ""}

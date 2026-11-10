@@ -72,6 +72,111 @@ export interface SectorDefinition {
 }
 
 export const SECTORS: Record<string, SectorDefinition> = {
+  aditya_university: {
+    id: "aditya_university",
+    label: "Aditya University - B.Tech Admissions & Parent Desk",
+    teluguLabel: "ఆదిత్య యూనివర్సిటీ - B.Tech అడ్మిషన్లు & పేరెంట్ హెల్ప్‌లైన్",
+    script: {
+      greeting: "నమస్కారం {name} గారు, నేను ఆదిత్య యూనివర్సిటీ 24/7 అడ్మిషన్స్ & పేరెంట్ హెల్ప్‌లైన్ డెస్క్ నుండి శివాని మాట్లాడుతున్నాను. బాగున్నారా?",
+      pitch: "మీరు మీ అబ్బాయి లేదా అమ్మాయి కోసం 4-సంవత్సరాల B.Tech కోర్సులు (CSE, AI & ML, Data Science, ECE) మరియు హాస్టల్ వివరాలు తెలుసుకోవడానికి ఎంక్వైరీ చేశారు కదా.",
+      question: "EAPCET ర్యాంక్ లేదా ఇంటర్ మార్కుల ఆధారంగా స్కాలర్‌షిప్ మరియు సీట్ కన్ఫర్మేషన్ కోసం ఈ శనివారం సూరంపాలెం క్యాంపస్ విజిట్ లేదా అడ్మిషన్ కౌన్సెలింగ్ ఏర్పాటు చేయమంటారా?",
+      closing: "చాలా సంతోషం అండి! ఆదిత్య యూనివర్సిటీ B.Tech బ్రోచర్, ఫీజు స్ట్రక్చర్, టెక్నికల్ హబ్ ప్లేస్‌మెంట్ రికార్డులు (3000+ Placements, ₹33 LPA Highest Package) మరియు హాస్టల్ వివరాలు మీ వాట్సాప్‌కి పంపించాము. ధన్యవాదాలు!",
+    },
+    defaultProspects: (company: string) => [
+      {
+        name: "శ్రీనివాస రావు (Srinivasa Rao - Father of Sai Teja)",
+        phone: "+91 98480 12345",
+        need: "B.Tech CSE (AI & Machine Learning) Seat & EAPCET Rank Eligibility",
+        notes: "Son secured 14,200 rank in EAPCET. Inquiring about CSE AI&ML seat, Surampalem campus hostel, and campus placements.",
+        call_status: "closed",
+        outcome: "won",
+        duration_seconds: 44,
+        audio_url: "/audio/call_dialogue_7285625156446f0a.wav",
+        transcript: `నమస్కారం శ్రీనివాస రావు గారు, ఆదిత్య యూనివర్సిటీ అడ్మిషన్ డెస్క్ నుండి శివాని మాట్లాడుతున్నాను. నమస్తే మేడం, మా అబ్బాయి సాయి తేజ కి EAPCET లో 14,200 ర్యాంక్ వచ్చింది. సూరంపాలెం క్యాంపస్ లో B.Tech CSE AI&ML సీట్ దొరుకుతుందా? తప్పకుండా శ్రీనివాస రావు గారు! మీ ర్యాంక్ కి CSE AI&ML సీట్ కన్ఫర్మ్ అవుతుంది. మన వద్ద అమెజాన్, సిస్కో కంపెనీలతో 3000 కు పైగా ప్లేస్‌మెంట్స్ వచ్చాయి. బాయ్స్ హాస్టల్ సౌకర్యాలు మరియు ఫీజు వివరాలు ఎలా ఉన్నాయి మేడం? AC మరియు Non-AC హాస్టల్స్, హైజీనిక్ ఫుడ్ మరియు 24/7 సెక్యూరిటీ ఉన్నాయి సర్. చాలా సంతోషం మేడం! రేపు ఉదయం 10 గంటలకి నేరుగా క్యాంపస్ కి వచ్చి అడ్మిషన్ ఫారమ్ పూర్తి చేస్తాం.`,
+        key_quote: "మా అబ్బాయికి 14,200 ర్యాంక్ వచ్చింది, రేపు ఉదయం 10 గంటలకి నేరుగా క్యాంపస్ కి వచ్చి అడ్మిషన్ ఫారమ్ పూర్తి చేస్తాం.",
+        call_time: "Today 10:15 AM",
+      },
+      {
+        name: "లక్ష్మీ నారాయణ (Lakshmi Narayana - Father of Harini)",
+        phone: "+91 94401 23456",
+        need: "B.Tech ECE Admission & Girls Hostel Security",
+        notes: "Checking Technical Hub robotics training and 24/7 girls hostel security at Surampalem campus.",
+        call_status: "closed",
+        outcome: "won",
+        duration_seconds: 40,
+        audio_url: "/audio/call_dialogue_ceb2f63d4bb09741.wav",
+        transcript: `హలో లక్ష్మీ నారాయణ గారూ, ఆదిత్య యూనివర్సిటీ పేరెంట్ హెల్ప్‌లైన్ డెస్క్ నుండి. అమ్మాయి హరిణి B.Tech ECE కోర్సు గురించి ఎంక్వైరీ చేశారు కదా? అవునండి, మా అమ్మాయికి ఈసీఈ తో పాటు సాఫ్ట్‌వేర్ కోడింగ్ ట్రైనింగ్ కూడా ఇస్తారా? అవును సర్! మన ఆదిత్య టెక్నికల్ హబ్ లో ఫస్ట్ ఇయర్ నుండే గ్లోబల్ సర్టిఫికేషన్స్ మరియు కోడింగ్ ప్రాక్టీస్ ఉంటుంది. గర్ల్స్ హాస్టల్ భద్రత ఎలా ఉంటుంది? బయోమెట్రిక్ ఎంట్రీ, లేడీ వార్డెన్స్ మరియు రౌండ్-ది-క్లాక్ సెక్యూరిటీ ఉంది సర్. చాలా సంతృప్తిగా ఉంది మేడం, వెంటనే అడ్మిషన్ ప్రొసీజర్ మరియు ఫీజు లింక్ వాట్సాప్ చేయండి.`,
+        key_quote: "హాస్టల్ సెక్యూరిటీ మరియు టెక్నికల్ హబ్ ట్రైనింగ్ బాగున్నాయి, అడ్మిషన్ లింక్ వాట్సాప్ చేయండి.",
+        call_time: "Today 10:50 AM",
+      },
+      {
+        name: "వెంకట రమణ (Venkata Ramana - Father of Karthik)",
+        phone: "+91 98765 34567",
+        need: "Merit Scholarship & Fee Concession for 95% in Inter",
+        notes: "Scored 954/1000 in intermediate. Checking merit fee waiver.",
+        call_status: "closed",
+        outcome: "won",
+        duration_seconds: 38,
+        audio_url: "/audio/call_dialogue_def5e8eaa12f1fe3.wav",
+        transcript: `నమస్కారం వెంకట రమణ గారు, ఆదిత్య యూనివర్సిటీ స్కాలర్‌షిప్ సెల్ నుండి. మీ అబ్బాయి ఇంటర్మీడియట్ లో 954 మార్కులు సాధించినందుకు అభినందనలు. థాంక్యూ మేడం! ఇంటర్ లో 95% వచ్చిన విద్యార్థులకు ఆదిత్యలో ఫీజు రాయితీ ఉంటుందా? ఖచ్చితంగా సర్! 95% పైన మార్కులు వచ్చిన వారికి ట్యూషన్ ఫీజులో 25% మెరిట్ స్కాలర్‌షిప్ లభిస్తుంది. చాలా మంచి అవకాశం అండి! డాక్యుమెంట్ వెరిఫికేషన్ కి ఎప్పుడు రావాలి? ఈ గురువారం ఒరిజినల్ సర్టిఫికెట్స్ తో క్యాంపస్ కి రండి సర్. సరే మేడం, గురువారం తప్పకుండా వస్తాను.`,
+        key_quote: "95% మార్కులకు 25% ఫీజు రాయితీ ఇస్తామన్నారు, గురువారం ఒరిజినల్ సర్టిఫికెట్స్ తో వస్తాను.",
+        call_time: "Today 11:20 AM",
+      },
+      {
+        name: "ప్రసాద్ వర్మ (Prasad Varma - Father of Tarun)",
+        phone: "+91 99890 45678",
+        need: "B.Tech Data Science vs Core CSE Placement Query",
+        notes: "Parent seeking guidance on career prospects between Data Science and Core CSE.",
+        call_status: "ongoing",
+        outcome: "pending",
+        duration_seconds: 28,
+        audio_url: "/audio/call_dialogue_33ea5d84c336d030.wav",
+        transcript: `ఏజెంట్ ప్రస్తుతం ప్రసాద్ వర్మ గారితో లైవ్ సంభాషణలో ఉన్నారు: ఆదిత్య యూనివర్సిటీలో B.Tech CSE మరియు Data Science రెండింటికీ సమానంగా టాప్ MNC కంపెనీ ప్లేస్‌మెంట్ డ్రైవ్స్ జరుగుతాయి...`,
+        key_quote: "డేటా సైన్స్ మరియు కంప్యూటర్ సైన్స్ లలో భవిష్యత్తు జాబ్ మార్కెట్ ఎలా ఉంటుందో వివరించగలరా?",
+        call_time: "Now (Live Dialing)",
+      },
+      {
+        name: "రామకృష్ణ (Ramakrishna - Father of Anusha)",
+        phone: "+91 97000 56789",
+        need: "B.Tech CSE Management Quota & Document Checklist",
+        notes: "Direct admission process before Phase-2 EAPCET counselling. Scheduled follow-up.",
+        call_status: "queued",
+        outcome: "pending",
+        duration_seconds: 0,
+        call_time: "Upcoming: Today 3:30 PM",
+      },
+      {
+        name: "సుబ్బారావు (Subba Rao - Father of Nikhil)",
+        phone: "+91 96111 67890",
+        need: "Campus Visit & Mechanical Robotics Lab Tour",
+        notes: "Interested in Surampalem campus laboratories, sports facilities, and bus transport.",
+        call_status: "queued",
+        outcome: "pending",
+        duration_seconds: 0,
+        call_time: "Upcoming: Tomorrow 10:00 AM",
+      },
+      {
+        name: "నాగేశ్వర రావు (Nageswara Rao - Father of Dinesh)",
+        phone: "+91 91234 78901",
+        need: "B.Tech IT with Cloud Computing Specialization",
+        notes: "Inquiring about AWS / Azure cloud lab certifications and annual hostel charges.",
+        call_status: "queued",
+        outcome: "pending",
+        duration_seconds: 0,
+        call_time: "Upcoming: Tomorrow 11:30 AM",
+      },
+      {
+        name: "వెంకటేశ్వర స్వామి (Venkateswara Swamy - Father of Priya)",
+        phone: "+91 93901 89012",
+        need: "B.Tech CSE Cyber Security Admission Guidance",
+        notes: "Inquiring about syllabus, faculty qualifications, and direct seat availability.",
+        call_status: "queued",
+        outcome: "pending",
+        duration_seconds: 0,
+        call_time: "Upcoming: Tomorrow 2:00 PM",
+      },
+    ],
+  },
   digital_marketing: {
     id: "digital_marketing",
     label: "Digital Marketing & Agency",
@@ -529,28 +634,36 @@ export async function seedSectorCampaign(
     };
   }
 
-  // 1. Attempt dynamic LLM campaign generation via Gemini 2.5 Flash
+  // 1. Attempt dynamic LLM campaign generation via Gemini 2.5 Flash (for custom/standard sectors)
   let rawProspects: Omit<ColdCallProspect, "id">[] | null = null;
   let activeScript: any = sector.script;
 
-  try {
-    const llmCampaign = await generateCampaignWithGemini(companyName, sectorKeyOrCustom, voiceName, languageModeId);
-    if (llmCampaign && llmCampaign.prospects && llmCampaign.prospects.length >= 4) {
-      rawProspects = llmCampaign.prospects.map((p) => ({
-        ...p,
-        name: cleanCustomerName(p.name),
-      }));
-      activeScript = llmCampaign.script;
-    }
-  } catch (llmErr) {
-    console.warn("Dynamic campaign generation failed, using sector fallback:", llmErr);
-  }
-
-  if (!rawProspects) {
+  if (sector.id === "aditya_university") {
+    // Preserve the rich authentic Aditya University 4-year B.Tech parent outreach dataset
     rawProspects = sector.defaultProspects(companyName).map((p) => ({
       ...p,
       name: cleanCustomerName(p.name),
     }));
+  } else {
+    try {
+      const llmCampaign = await generateCampaignWithGemini(companyName, sectorKeyOrCustom, voiceName, languageModeId);
+      if (llmCampaign && llmCampaign.prospects && llmCampaign.prospects.length >= 4) {
+        rawProspects = llmCampaign.prospects.map((p) => ({
+          ...p,
+          name: cleanCustomerName(p.name),
+        }));
+        activeScript = llmCampaign.script;
+      }
+    } catch (llmErr) {
+      console.warn("Dynamic campaign generation failed, using sector fallback:", llmErr);
+    }
+
+    if (!rawProspects) {
+      rawProspects = sector.defaultProspects(companyName).map((p) => ({
+        ...p,
+        name: cleanCustomerName(p.name),
+      }));
+    }
   }
 
   // 2. Synthesize authentic full call speech for the first featured lead

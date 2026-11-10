@@ -229,7 +229,22 @@ export async function generateLiveAgentTurnReply(params: AgentTurnParams): Promi
   const apiKey = process.env.GEMINI_API_KEY || process.env.LLM_API_KEY;
   const { companyName, businessType, agentVoiceName, language, conversationHistory, customerSpeechText } = params;
 
-  const systemInstruction = `You are ${agentVoiceName}, an empathetic and articulate AI outbound sales executive for ${companyName} (${businessType}).
+  const isAditya = companyName.toLowerCase().includes("aditya") || businessType.toLowerCase().includes("aditya") || businessType.toLowerCase().includes("btech");
+
+  const systemInstruction = isAditya
+    ? `You are ${agentVoiceName}, the polite and knowledgeable 24/7 Admissions Officer & Parent Assistant for Aditya University (Surampalem, Andhra Pradesh).
+You are speaking live on the phone with a parent inquiring about our 4-Year B.Tech Degree Programs (CSE, AI & ML, Data Science, Cyber Security, ECE, EEE, Mechanical, Civil, IT).
+Key College Knowledge:
+- Placements: 3,000+ campus placements, ₹33+ LPA highest package (Amazon, Cisco, TCS, Infosys, Tech Mahindra).
+- Technical Hub: Coding & global IT certifications from 1st year.
+- Hostels: Separate Boys & Girls AC and Non-AC hostels with 24/7 security, Wi-Fi, hygienic food court.
+- Scholarships: 25% to 50% merit concession for top EAPCET ranks and >90% in Intermediate.
+- Campus: Surampalem (near Kakinada / Rajahmundry, AP). Saturday Open House campus visits.
+Rules:
+1. Speak concisely in 1 to 2 spoken conversational sentences (under 30 words).
+2. Answer the parent respectfully in Telugu (or English if they speak in English).
+3. Do NOT use markdown, bullets, or asterisks. Output purely spoken conversational words.`
+    : `You are ${agentVoiceName}, an empathetic and articulate AI outbound sales executive for ${companyName} (${businessType}).
 You are speaking on a live phone call with a customer.
 Language mode: ${language} (respond naturally in the customer's language/dialect: Telugu, Hinglish, or English).
 Rules:
@@ -291,6 +306,39 @@ Rules:
 function contextualSalesReply(text: string, company: string, agent: string, language: string): string {
   const t = text.toLowerCase();
   const isTe = language.startsWith("te");
+  const isAditya = company.toLowerCase().includes("aditya") || t.includes("aditya") || t.includes("btech") || t.includes("college") || t.includes("university");
+
+  if (isAditya) {
+    if (t.includes("course") || t.includes("btech") || t.includes("branch") || t.includes("కోర్సు") || t.includes("బ్రాంచ్") || t.includes("cse") || t.includes("ai")) {
+      return isTe
+        ? `ఆదిత్య యూనివర్సిటీలో 4-సంవత్సరాల B.Tech CSE, AI & ML, Data Science, ECE మరియు IT బ్రాంచెస్ అందుబాటులో ఉన్నాయి సర్. మీ అబ్బాయికి ఏ బ్రాంచ్ అంటే ఆసక్తి?`
+        : `At Aditya University, we offer 4-year B.Tech in CSE, AI & ML, Data Science, ECE, and IT. Which branch is your student interested in?`;
+    }
+
+    if (t.includes("hostel") || t.includes("హాస్టల్") || t.includes("room") || t.includes("food") || t.includes("security") || t.includes("భద్రత")) {
+      return isTe
+        ? `మా సూరంపాలెం క్యాంపస్ లో బాయ్స్ మరియు గర్ల్స్ కి వేర్వేరుగా 24/7 భద్రతతో కూడిన AC మరియు Non-AC హాస్టల్స్, పరిశుభ్రమైన భోజన సదుపాయం ఉన్నాయి సర్.`
+        : `We provide separate on-campus AC and Non-AC hostels for boys and girls with 24/7 security and hygienic food courts at our Surampalem campus.`;
+    }
+
+    if (t.includes("placement") || t.includes("job") || t.includes("salary") || t.includes("ప్లేస్‌మెంట్") || t.includes("ప్యాకేజీ") || t.includes("amazon")) {
+      return isTe
+        ? `ఆదిత్యలో ఏటా 3000 కు పైగా ప్లేస్‌మెంట్స్ వస్తాయి సర్. అమెజాన్, సిస్కో, టీసీఎస్ కంపెనీలలో అత్యధిక ప్యాకేజీ ₹33 లక్షల వరకు వచ్చింది!`
+        : `Aditya University has 3,000+ placements every year with top recruiters like Amazon, Cisco, and TCS, with the highest package reaching ₹33+ LPA!`;
+    }
+
+    if (t.includes("fee") || t.includes("scholarship") || t.includes("cost") || t.includes("ఫీజు") || t.includes("రాయితీ") || t.includes("eapcet")) {
+      return isTe
+        ? `EAPCET ర్యాంక్ మరియు ఇంటర్ మార్కుల (90%+) ఆధారంగా 25% నుండి 50% వరకు మెరిట్ స్కాలర్‌షిప్ లభిస్తుంది సర్. పూర్తి ఫీజు బ్రోచర్ వాట్సాప్ పంపించమంటారా?`
+        : `Merit scholarships up to 25% to 50% tuition fee waiver are available based on EAPCET rank and Intermediate marks. Shall I share the fee brochure?`;
+    }
+
+    if (t.includes("campus") || t.includes("visit") || t.includes("address") || t.includes("క్యాంపస్") || t.includes("ఎక్కడ") || t.includes("శనివారం")) {
+      return isTe
+        ? `మా క్యాంపస్ తూర్పు గోదావరి జిల్లా సూరంపాలెంలో ఉంది సర్. ఈ శనివారం ఉదయం 10 గంటలకి ఓపెన్ హౌస్ క్యాంపస్ విజిట్ కి మీరు ఆహ్వానితులు!`
+        : `Our university campus is located in Surampalem, AP. You are warmly invited for our Open House campus visit this Saturday at 10 AM!`;
+    }
+  }
 
   if (t.includes("cost") || t.includes("price") || t.includes("charge") || t.includes("ధర") || t.includes("ఖర్చు") || t.includes("fee") || t.includes("ప్యాకేజీ")) {
     return isTe

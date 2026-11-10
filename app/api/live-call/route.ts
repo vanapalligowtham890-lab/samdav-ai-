@@ -119,14 +119,24 @@ export async function POST(req: NextRequest) {
     // START CALL: Greeting line synthesized by Gnani Timbre
     if (action === "start") {
       const sessionId = `live_call_${Date.now()}`;
+      const isAditya = company.toLowerCase().includes("aditya") || businessType.toLowerCase().includes("aditya") || businessType.toLowerCase().includes("btech");
       
-      let greeting = `నమస్కారం అండి! నేను ${company} నుండి ${voiceDef.name} మాట్లాడుతున్నాను. మీకు ఎలా సహాయపడగలను?`;
+      let greeting = isAditya
+        ? `నమస్కారం! ఆదిత్య యూనివర్సిటీ 24/7 అడ్మిషన్ డెస్క్‌కి స్వాగతం. నేను ${voiceDef.name} మాట్లాడుతున్నాను. 4-సంవత్సరాల B.Tech కోర్సులు, ఫీజులు లేదా హాస్టల్ వివరాల గురించి మీకు ఎలా సహాయపడగలను?`
+        : `నమస్కారం అండి! నేను ${company} నుండి ${voiceDef.name} మాట్లాడుతున్నాను. మీకు ఎలా సహాయపడగలను?`;
+
       if (language.startsWith("hi-en") || language === "hi-en") {
-        greeting = `Namaste ji! Mai ${company} se ${voiceDef.name} bol rahi hu. Mai aapki kya madad kar sakti hu?`;
+        greeting = isAditya
+          ? `Namaste! Aditya University 24/7 Admissions Desk me aapka swagat hai. Mai ${voiceDef.name} bol rahi hu. B.Tech courses aur hostel ke baare me mai aapki kya madad kar sakti hu?`
+          : `Namaste ji! Mai ${company} se ${voiceDef.name} bol rahi hu. Mai aapki kya madad kar sakti hu?`;
       } else if (language.startsWith("hi")) {
-        greeting = `नमस्ते! मैं ${company} से ${voiceDef.name} बात कर रही हूँ। मैं आपकी किस प्रकार सहायता कर सकती हूँ?`;
+        greeting = isAditya
+          ? `नमस्ते! आदित्य यूनिवर्सिटी 24/7 एडमिशन डेस्क में आपका स्वागत है। मैं ${voiceDef.name} बात कर रही हूँ। 4-वर्षीय बीटेक पाठ्यक्रमों और छात्रावास के बारे में मैं आपकी क्या सहायता कर सकती हूँ?`
+          : `नमस्ते! मैं ${company} से ${voiceDef.name} बात कर रही हूँ। मैं आपकी किस प्रकार सहायता कर सकती हूँ?`;
       } else if (language.startsWith("en")) {
-        greeting = `Hello and welcome! This is ${voiceDef.name} from ${company}. How may I help you today?`;
+        greeting = isAditya
+          ? `Welcome to Aditya University 24/7 Admissions & Parent Desk! This is ${voiceDef.name}. How can I assist you with our 4-year B.Tech courses, scholarships, or campus facilities?`
+          : `Hello and welcome! This is ${voiceDef.name} from ${company}. How may I help you today?`;
       } else if (language.startsWith("ta")) {
         greeting = `வணக்கம்! நான் ${company} நிறுவனத்திலிருந்து ${voiceDef.name} பேசுகிறேன். உங்களுக்கு நான் எவ்வாறு உதவ முடியும்?`;
       }

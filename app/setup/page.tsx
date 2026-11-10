@@ -22,6 +22,7 @@ import { ALL_VOICES, VoiceDefinition } from "@/lib/voice-catalog";
 import { LANGUAGE_MODES, getLanguageMode } from "@/lib/languages";
 
 const PREDEFINED_SECTORS = [
+  { value: "Aditya University - B.Tech Admissions & Parent Desk", label: "Aditya University - B.Tech Admissions & Parent Desk" },
   { value: "Digital Marketing & Agency", label: "Digital Marketing & Agency" },
   { value: "E-Commerce & Online Stores", label: "E-Commerce & Online Stores" },
   { value: "IT Services, Software & SaaS", label: "IT Services, Software & SaaS" },
