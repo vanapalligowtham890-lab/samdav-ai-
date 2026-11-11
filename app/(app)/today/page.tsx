@@ -260,7 +260,8 @@ export default function TodayDashboardPage() {
       audioRecapRef.current = null;
     }
 
-    const audio = new Audio(recap.audio_url);
+    const recapUrl = `${recap.audio_url}${recap.audio_url.includes("?") ? "&" : "?"}t=${Date.now()}`;
+    const audio = new Audio(recapUrl);
     audioRecapRef.current = audio;
     audio.onended = () => {
       setIsPlayingRecap(false);
@@ -338,7 +339,8 @@ export default function TodayDashboardPage() {
     }
     setPlayingCallId(null);
 
-    const targetUrl = prospect.audio_url || `/api/call-audio?prospectId=${encodeURIComponent(prospect.id)}&voice=${encodeURIComponent(voiceName)}`;
+    const rawUrl = prospect.audio_url || `/api/call-audio?prospectId=${encodeURIComponent(prospect.id)}&voice=${encodeURIComponent(voiceName)}`;
+    const targetUrl = `${rawUrl}${rawUrl.includes("?") ? "&" : "?"}t=${Date.now()}`;
     setLoadingAudioId(prospect.id);
 
     const audio = new Audio(targetUrl);

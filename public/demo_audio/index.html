@@ -231,15 +231,40 @@
     <div class="top-header">
       <div class="header-row">
         <div class="brand-title">
-          <img src="/logo.svg" onerror="this.onerror=null; this.src='/logo.png';" alt="Samvad AI" class="logo-img">
+          <svg class="logo-img" viewBox="0 0 100 100" fill="none" style="width:44px;height:44px;border-radius:10px;border:1px solid var(--border);padding:2px;background:#1e1b4b;flex-shrink:0;">
+            <defs>
+              <linearGradient id="demoSvBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#1e1b4b" />
+                <stop offset="100%" stop-color="#312e81" />
+              </linearGradient>
+              <linearGradient id="demoSvWave" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#6366f1" />
+                <stop offset="50%" stop-color="#8b5cf6" />
+                <stop offset="100%" stop-color="#ec4899" />
+              </linearGradient>
+              <linearGradient id="demoSvGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#fbbf24" />
+                <stop offset="100%" stop-color="#f59e0b" />
+              </linearGradient>
+            </defs>
+            <rect width="100" height="100" rx="22" fill="url(#demoSvBg)" />
+            <rect x="2" y="2" width="96" height="96" rx="20" stroke="#6366f1" stroke-width="2" stroke-opacity="0.4" />
+            <path d="M22 26 C22 18 28 12 36 12 L64 12 C72 12 78 18 78 26 L78 52 C78 60 72 66 64 66 L42 66 L30 76 L32 66 L22 66 Z" fill="#0f172a" fill-opacity="0.4" stroke="url(#demoSvWave)" stroke-width="2.5" stroke-linejoin="round" />
+            <rect x="33" y="38" width="4.5" height="16" rx="2.25" fill="url(#demoSvGold)" />
+            <rect x="41.5" y="29" width="4.5" height="34" rx="2.25" fill="url(#demoSvWave)" />
+            <rect x="50" y="22" width="4.5" height="46" rx="2.25" fill="#ffffff" />
+            <rect x="58.5" y="31" width="4.5" height="30" rx="2.25" fill="url(#demoSvWave)" />
+            <rect x="67" y="40" width="4.5" height="12" rx="2.25" fill="url(#demoSvGold)" />
+            <path d="M78 20 L80 25 L85 27 L80 29 L78 34 L76 29 L71 27 L76 25 Z" fill="#fbbf24" />
+          </svg>
           <div>
-            <h1>Samvad AI — Video Demo Studio</h1>
-            <p class="subtitle">AI Voice Narration: Gnani Timbre v3.0 Harshad (Indian English) &bull; 100% Pre-Recorded &amp; Calibrated</p>
+            <h1>Samvad AI — Aditya University Demo Studio</h1>
+            <p class="subtitle">Parent Admissions Desk &bull; Gnani Timbre &amp; Prisma Sovereign Voice Engine</p>
           </div>
         </div>
         <div class="timer-badge">
           <span class="pulse-dot"></span>
-          <span>DURATION: 2m 39s (STRICTLY &lt; 3 MINS)</span>
+          <span>DURATION: 2m 45s (STRICTLY &lt; 3 MINS)</span>
         </div>
       </div>
 
@@ -247,7 +272,7 @@
       <div class="controls-bar">
         <button id="playFullBtn" class="btn btn-primary" onclick="toggleFullNarration()">
           <span id="playFullIcon">▶</span>
-          <span id="playFullText">Play Continuous Full Narration (2m 39s)</span>
+          <span id="playFullText">Play Continuous Full Narration (2m 45s)</span>
         </button>
         <button id="screenRecordBtn" class="btn btn-record" onclick="startScreenRecording()">
           ⏺ Record Screen &amp; Audio (Chrome WebM/MP4)
@@ -276,13 +301,13 @@
           <span class="sec-tag">1. Introduction &amp; The Problem</span>
           <span class="screen-pill">Screen: Landing Page (/)</span>
         </div>
-        <span class="time-slot">0:00 &rarr; 0:36 (36.8s)</span>
+        <span class="time-slot">0:00 &rarr; 0:35 (35s)</span>
       </div>
       <div class="action-instruction">
-        👉 <strong>Action on Screen:</strong> Open homepage (<a href="http://localhost:3000/" target="_blank">/</a>). Show the header logo, problem headline, voice audition chips, and Gnani attribution badges.
+        👉 <strong>Action on Screen:</strong> Open homepage (<a href="http://localhost:3000/" target="_blank">/</a>). Show the Aditya University banner, vector logo, parent admissions headline, and Gnani attribution.
       </div>
       <div class="teleprompter-box">
-        "Hello judges! I am Gowtham, presenting Vaani Recap — an autonomous multilingual AI cold calling and lead briefing agent built for over 63 million Indian SMBs. Vaani Recap automates outbound calling, transcribes regional calls, and delivers an audio evening recap under 60 words."
+        "Hello respected evaluators! I am Gowtham, presenting Samvad AI — an autonomous parent admissions and student counseling agent built for Aditya University. During B.Tech admissions season, our agent handles high-volume parent inquiries, explains our NAAC A++ accreditation, and guides families through our 180-acre Surampalem campus."
       </div>
       <div class="audio-player-row">
         <audio controls src="/demo_audio/section_1_intro.wav"></audio>
@@ -294,16 +319,16 @@
     <div class="section-card" id="card-sec2">
       <div class="card-top">
         <div>
-          <span class="sec-tag">2. Live Dashboard &amp; Outbound Dialing</span>
+          <span class="sec-tag">2. Live Admissions Dashboard &amp; Parent Advisory</span>
           <span class="screen-pill">Screen: Dashboard (/today)</span>
         </div>
-        <span class="time-slot">0:37 &rarr; 1:06 (29.0s)</span>
+        <span class="time-slot">0:35 &rarr; 1:05 (30s)</span>
       </div>
       <div class="action-instruction">
-        👉 <strong>Action on Screen:</strong> Click to <a href="http://localhost:3000/today" target="_blank">/today</a>. Point to Verified Forwarding Number (+91 98765 43210), 6 KPI cards, and click <strong>'Dial Next Prospect'</strong>.
+        👉 <strong>Action on Screen:</strong> Click to <a href="http://localhost:3000/today" target="_blank">/today</a>. Point to Verified Admissions Desk (+91 98765 43210), 6 KPI cards, and Upcoming &amp; Recorded Calling Lists.
       </div>
       <div class="teleprompter-box">
-        "Here is the live Dashboard. Outbound calls route through the owner's verified forwarding number, showing a trusted caller ID. When I click Dial Next Prospect, the AI agent initiates the cold call using our sector campaign script and engages the customer."
+        "Here is the live Admissions Dashboard for Aditya University. The agent operates autonomously, advising parents on four-year B.Tech programs in CSE, AI and Machine Learning, Data Science, and ECE. In our prototype mode, all parent consultations are pre-calibrated with verified Gnani Timbre neural voices."
       </div>
       <div class="audio-player-row">
         <audio controls src="/demo_audio/section_2_dashboard.wav"></audio>
@@ -315,16 +340,16 @@
     <div class="section-card" id="card-sec3">
       <div class="card-top">
         <div>
-          <span class="sec-tag">3. Call Recordings &amp; Multi-Voice Dialogue</span>
-          <span class="screen-pill">Screen: Recordings (/calls)</span>
+          <span class="sec-tag">3. Authentic Parent Consultations &amp; Dual Voice Dialogue</span>
+          <span class="screen-pill">Screen: Consultations (/calls)</span>
         </div>
-        <span class="time-slot">1:07 &rarr; 1:39 (32.0s)</span>
+        <span class="time-slot">1:05 &rarr; 1:40 (35s)</span>
       </div>
       <div class="action-instruction">
-        👉 <strong>Action on Screen:</strong> Click to <a href="http://localhost:3000/calls" target="_blank">/calls</a>. Hit <strong>Play</strong> on a call to hear contrasting agent and customer voices. Point to verbatim STT transcript and budget highlight.
+        👉 <strong>Action on Screen:</strong> Click to <a href="http://localhost:3000/calls" target="_blank">/calls</a>. Hit <strong>Play</strong> on a consultation call to hear contrasting officer (Shivani) and Telugu parent voices with natural 400ms pauses.
       </div>
       <div class="teleprompter-box">
-        "In Recordings, every call is synthesized using Gnani Timbre v3.0 with distinct, contrasting voices for agent and customer without repetition. Simultaneously, Gnani Prisma STT transcribes the call, capturing customer intent and budget."
+        "In Recordings, every call features authentic multi-turn counseling between our officer Shivani and real Telugu parents — both Fathers and Mothers — with natural four hundred millisecond pauses. Parents ask deep questions about our Industry 4.0 curriculum, Technical Hub coding, and hostel security, with strict gender-accurate honorifics."
       </div>
       <div class="audio-player-row">
         <audio controls src="/demo_audio/section_3_recordings.wav"></audio>
@@ -336,16 +361,16 @@
     <div class="section-card" id="card-sec4">
       <div class="card-top">
         <div>
-          <span class="sec-tag">4. Spoken Evening Brief &amp; Lead Card</span>
+          <span class="sec-tag">4. Admissions Daily Brief &amp; Lead Card</span>
           <span class="screen-pill">Screen: Lead Card (/leads/[id])</span>
         </div>
-        <span class="time-slot">1:40 &rarr; 2:09 (28.8s)</span>
+        <span class="time-slot">1:40 &rarr; 2:10 (30s)</span>
       </div>
       <div class="action-instruction">
-        👉 <strong>Action on Screen:</strong> On <a href="http://localhost:3000/today" target="_blank">/today</a>, play the Spoken Evening Brief (<60 words). Click <strong>'View lead card'</strong> to display objection quotes and pre-drafted WhatsApp reply.
+        👉 <strong>Action on Screen:</strong> On <a href="http://localhost:3000/today" target="_blank">/today</a>, play the Spoken Admissions Brief (<60 words). Click <strong>'View lead card'</strong> to display student EAPCET rank, branch preference, and one-click WhatsApp follow-up.
       </div>
       <div class="teleprompter-box">
-        "At day end, owners listen to our Spoken Evening Brief under 60 words, synthesized with Gnani Timbre, highlighting won deals and callbacks. Clicking any prospect opens their structured Lead Card with objection quotes and a one-click WhatsApp follow-up."
+        "At day end, the admissions office listens to our Spoken Daily Brief under sixty words, synthesized with Gnani Timbre, highlighting confirmed admissions and campus counseling visits. Clicking any parent opens their structured Lead Card with EAPCET ranks and one-click WhatsApp follow-ups."
       </div>
       <div class="audio-player-row">
         <audio controls src="/demo_audio/section_4_spoken_recap.wav"></audio>
@@ -357,16 +382,16 @@
     <div class="section-card" id="card-sec5">
       <div class="card-top">
         <div>
-          <span class="sec-tag">5. 10 Indian Language Modes &amp; Submission Closing</span>
+          <span class="sec-tag">5. Sovereign AI Voice Catalog &amp; Performance</span>
           <span class="screen-pill">Screen: Settings (/settings)</span>
         </div>
-        <span class="time-slot">2:09 &rarr; 2:39 (29.6s)</span>
+        <span class="time-slot">2:10 &rarr; 2:45 (35s)</span>
       </div>
       <div class="action-instruction">
-        👉 <strong>Action on Screen:</strong> Click to <a href="http://localhost:3000/settings" target="_blank">/settings</a>. Show 10 Indian Language Modes, 16+ Timbre voices, SQLite zero-billing cache, and close with a final thank you!
+        👉 <strong>Action on Screen:</strong> Click to <a href="http://localhost:3000/settings" target="_blank">/settings</a>. Show 10 Indian Language Modes, 16+ Timbre voices, SQLite zero-billing cache, and conclude your presentation!
       </div>
       <div class="teleprompter-box">
-        "In Settings, Vaani Recap supports 10 Indian language modes across Telugu, Hinglish, Hindi, and Tamil, with over 16 verified Gnani Timbre voices. Audio hashes are cached in SQLite for zero duplicate billing. Thank you!"
+        "In Settings, our system leverages Gnani Prisma STT and Gnani Timbre TTS across 10 Indian language modes with over 16 verified voices. All audio files and transcripts are cached in SQLite for zero duplicate billing and instantaneous playback. Thank you!"
       </div>
       <div class="audio-player-row">
         <audio controls src="/demo_audio/section_5_settings_conclusion.wav"></audio>

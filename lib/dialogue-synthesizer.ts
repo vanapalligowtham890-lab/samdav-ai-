@@ -368,8 +368,8 @@ export async function synthesizeDialogueAudio(
     try {
       const turnResult = await synthesizeSpeech(turn.text, {
         voice: turnVoice.id,
-        model: turnVoice.model,
-        language: turnVoice.language || language,
+        model: turnVoice.model || "timbre-v3.0",
+        language: language || "te-IN",
       });
 
       const turnDiskPath = path.join(process.cwd(), "public", turnResult.audioUrl.replace(/^\//, ""));

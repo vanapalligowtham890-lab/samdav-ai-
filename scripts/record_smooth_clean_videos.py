@@ -25,55 +25,55 @@ os.makedirs(DESKTOP_DIR, exist_ok=True)
 os.makedirs(PUBLIC_VIDEO_DIR, exist_ok=True)
 os.makedirs(AUDIO_DIR, exist_ok=True)
 
-# 5 Calibrated Sections — spoken by Devansh (smooth, clear, articulate, no throat shouting)
+# 5 Calibrated Sections — spoken by Harshad / Riyaa for Aditya University Admissions Desk
 SECTIONS = [
     {
         "id": "01_Section_1_Introduction",
-        "title": "Section 1 — Introduction & The SMB Problem",
+        "title": "Section 1 — Introduction & The Aditya University Problem",
         "audio_name": "section_1_intro.wav",
         "script": (
-            "Hello judges! I am Gowtham, presenting Vaani Recap — an autonomous multilingual AI cold calling "
-            "and lead briefing agent built for over 63 million Indian SMBs. Vaani Recap automates outbound calling, "
-            "transcribes regional calls, and delivers an audio evening recap under 60 words."
+            "Hello respected evaluators! I am Gowtham, presenting Samvad AI — an autonomous parent admissions "
+            "and student counseling agent built for Aditya University. During B.Tech admissions season, our agent "
+            "handles high-volume parent inquiries, explains our NAAC A++ accreditation, and guides families through our 180-acre Surampalem campus."
         )
     },
     {
         "id": "02_Section_2_Live_Dashboard",
-        "title": "Section 2 — Live Dashboard & Outbound Dialing",
+        "title": "Section 2 — Live Admissions Dashboard & Parent Advisory",
         "audio_name": "section_2_dashboard.wav",
         "script": (
-            "Here is the live Dashboard. Outbound calls route through the owner's verified forwarding number, "
-            "showing a trusted caller ID. When I click Dial Next Prospect, the AI agent initiates the cold call "
-            "using our sector campaign script and engages the customer."
+            "Here is the live Admissions Dashboard for Aditya University. The agent operates autonomously, "
+            "advising parents on four-year B.Tech programs in CSE, AI and Machine Learning, Data Science, and ECE. "
+            "In our prototype mode, all parent consultations are pre-calibrated with verified Gnani Timbre neural voices."
         )
     },
     {
         "id": "03_Section_3_Call_Recordings",
-        "title": "Section 3 — Call Recordings & Multi-Voice Dialogue",
+        "title": "Section 3 — Authentic Parent Consultations & Dual Voice Dialogue",
         "audio_name": "section_3_recordings.wav",
         "script": (
-            "In Recordings, every call is synthesized using Gnani Timbre v3.0 with distinct, contrasting voices "
-            "for agent and customer without repetition. Simultaneously, Gnani Prisma STT transcribes the call, "
-            "capturing customer intent and budget."
+            "In Recordings, every call features authentic multi-turn counseling between our officer Shivani "
+            "and real Telugu parents — both Fathers and Mothers — with natural four hundred millisecond pauses. "
+            "Parents ask deep questions about our Industry 4.0 curriculum, Technical Hub coding, and hostel security, with strict gender-accurate honorifics."
         )
     },
     {
         "id": "04_Section_4_Spoken_Recap_Lead_Card",
-        "title": "Section 4 — Spoken Evening Brief & Lead Card",
+        "title": "Section 4 — Admissions Daily Brief & Lead Card",
         "audio_name": "section_4_spoken_recap.wav",
         "script": (
-            "At day end, owners listen to our Spoken Evening Brief under 60 words, synthesized with Gnani Timbre, "
-            "highlighting won deals and callbacks. Clicking any prospect opens their structured Lead Card with objection "
-            "quotes and a one-click WhatsApp follow-up."
+            "At day end, the admissions office listens to our Spoken Daily Brief under sixty words, synthesized with Gnani Timbre, "
+            "highlighting confirmed admissions and campus counseling visits. Clicking any parent opens their structured Lead Card with EAPCET ranks "
+            "and one-click WhatsApp follow-ups."
         )
     },
     {
         "id": "05_Section_5_10_Languages_Settings",
-        "title": "Section 5 — 10 Language Modes & Submission Closing",
+        "title": "Section 5 — Sovereign AI Voice Catalog & Performance",
         "audio_name": "section_5_settings_conclusion.wav",
         "script": (
-            "In Settings, Vaani Recap supports 10 Indian language modes across Telugu, Hinglish, Hindi, and Tamil, "
-            "with over 16 verified Gnani Timbre voices. Audio hashes are cached in SQLite for zero duplicate billing. Thank you!"
+            "In Settings, our system leverages Gnani Prisma STT and Gnani Timbre TTS across 10 Indian language modes "
+            "with over 16 verified voices. All audio files and transcripts are cached in SQLite for zero duplicate billing and instantaneous playback. Thank you!"
         )
     }
 ]

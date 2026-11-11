@@ -206,7 +206,8 @@ export default function CallsPage() {
     }
     setPlayingId(null);
 
-    const targetUrl = call.audio_url || (call.filename ? `/audio/${call.filename}` : `/api/call-audio?prospectId=${encodeURIComponent(call.id)}`);
+    const rawUrl = call.audio_url || (call.filename ? `/audio/${call.filename}` : `/api/call-audio?prospectId=${encodeURIComponent(call.id)}`);
+    const targetUrl = `${rawUrl}${rawUrl.includes("?") ? "&" : "?"}t=${Date.now()}`;
     setLoadingAudioId(call.id);
 
     const audio = new Audio(targetUrl);

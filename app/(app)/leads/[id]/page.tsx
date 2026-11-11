@@ -160,7 +160,8 @@ export default function LeadDetailPage({
       }
     }
 
-    const targetUrl = audioUrl || `/api/call-audio?prospectId=${encodeURIComponent(lead?.call_id || lead?.id || "")}`;
+    const rawUrl = audioUrl || `/api/call-audio?prospectId=${encodeURIComponent(lead?.call_id || lead?.id || "")}`;
+    const targetUrl = `${rawUrl}${rawUrl.includes("?") ? "&" : "?"}t=${Date.now()}`;
 
     const audio = new Audio(targetUrl);
     audioRef.current = audio;
