@@ -1,26 +1,26 @@
 import docx
 from docx.shared import Inches, Pt, RGBColor
-from docx.enum.text import WD_ALIGN_PARAGRAPH
 import os
 
 def update_docx():
     src_path = r"C:\Users\vanap\Downloads\Vaani_Recap_Design_Thinking_Documentation (1) (1).docx"
-    dest_path = r"C:\Users\vanap\OneDrive\Desktop\Samvad Ai Documentation.docx"
+    dest_path_main = r"C:\Users\vanap\OneDrive\Desktop\Samvad Ai Documentation.docx"
+    dest_path_alt = r"C:\Users\vanap\OneDrive\Desktop\Samvad Ai Documentation (Team of 6 - Siddardha Included).docx"
 
     print("Opening source document...")
     doc = docx.Document(src_path)
 
-    # 1. Update Table 0 (Team Details)
+    # 1. Update Table 0 (Team Details) with 6 Members
     t0 = doc.tables[0]
-    # Remove row 5 (P. Siddardha) so team has exactly 5 members
-    tr_to_remove = t0.rows[5]._tr
-    tr_to_remove.getparent().remove(tr_to_remove)
+    
+    # We want 6 rows for students + 1 header = 7 rows total
+    while len(t0.rows) < 7:
+        t0.add_row()
 
-    # Renumber the 5th member
-    t0.rows[5].cells[0].text = "5"
-
-    # Add 4th column for Six Thinking Hats & Roles
-    t0.add_column(Inches(2.4))
+    # Add 4th column for Six Thinking Hats & Roles if not present
+    if len(t0.columns) < 4:
+        t0.add_column(Inches(2.4))
+    
     headers = ["S. No.", "Roll Number", "Name of the Student", "Six Thinking Hats & Role"]
     for i, h in enumerate(headers):
         t0.rows[0].cells[i].text = h
@@ -30,7 +30,8 @@ def update_docx():
         ("2", "2611DS507", "P. Harsha Vardhan", "White Hat (Facts, Architecture & Sovereign AI Data)"),
         ("3", "2611DS637", "T. Yamini Naga Lakshmi (Yamini)", "Red Hat (Parent Empathy, Counseling & Gender Respect)"),
         ("4", "2611DS636", "S. Praveen Kumar (Praveen)", "Black Hat (Risk Analysis, Guardrails & Quality Assurance)"),
-        ("5", "2611DS488", "P. Jaya Sai Manikanta (Manikanta)", "Yellow & Green Hats (Value Benefits, Innovation & Voice Demo)"),
+        ("5", "2611DS488", "P. Jaya Sai Manikanta (Manikanta)", "Yellow Hat (Value Proposition, Placements & Growth)"),
+        ("6", "2611DS484", "P. Siddardha", "Green Hat (Creative Voice Synthesis & Audio Demo)"),
     ]
 
     for row_idx, data in enumerate(team_data):
@@ -64,7 +65,8 @@ def update_docx():
             "Samvad AI (సంవాద్ AI) is an autonomous, multilingual voice calling platform powered by Indian sovereign AI engines: Gnani Prisma (Speech-to-Text) and Gnani Timbre (Text-to-Speech), "
             "backed by Google Gemini for intelligent reasoning and SQLite for zero-redundancy caching. The platform enables organizations to deploy intelligent voice agents that dial out, "
             "conduct natural multi-turn conversations in Indian regional languages, understand citizen inquiries, and extract structured CRM intelligence.\n\n"
-            "To prove the real-world versatility of the platform, our team tuned and deployed a dedicated showcase agent: The Aditya University Parent Admissions Desk. "
+            "To prove the real-world versatility of the platform, our team of six members (Gowtham Vanapalli, P. Harsha Vardhan, Yamini, Praveen, Manikanta, and P. Siddardha) "
+            "tuned and deployed a dedicated showcase agent: The Aditya University Parent Admissions Desk. "
             "During B.Tech admissions season, this agent conducts authentic, multi-turn phone consultations with parents in natural Telugu, explains our 180-acre Surampalem campus, "
             "NAAC A++ accreditation, Industry 4.0 curriculum, and hostel safety with strict gender-accurate honorifics ('సర్' for fathers, 'మేడమ్' for mothers), "
             "and automatically qualifies student leads with instant WhatsApp follow-up slips. The system operates strictly with synthetic data for privacy compliance, "
@@ -104,12 +106,13 @@ def update_docx():
             "Selected Solution: Samvad AI combines sovereign speech recognition (Gnani Prisma), multi-turn neural voice synthesis (Gnani Timbre), "
             "and LLM lead extraction into a unified autonomous platform, fine-tuned for Aditya University admissions.\n\n"
             "Edward de Bono's Six Thinking Hats Framework:\n"
-            "To ensure balanced design, each of our 5 team members examined the project through a designated Thinking Hat:\n"
+            "To ensure balanced design, each of our 6 team members examined the project through an individual Thinking Hat:\n"
             "• Blue Hat (Gowtham Vanapalli - Team Lead): Orchestrated the system architecture, managed the platform-to-showcase alignment, and structured the 5-minute review presentation.\n"
             "• White Hat (P. Harsha Vardhan - Data Analyst): Grounded the solution in hard data, evaluating Gnani Prisma 24kHz codemix accuracy and designing the SHA-256 SQLite zero-billing cache.\n"
             "• Red Hat (T. Yamini Naga Lakshmi - Empathy Lead): Advocated for parental emotions, ensuring maternal safety reassurance and strict gender-accurate honorifics ('సర్' vs 'మేడమ్').\n"
             "• Black Hat (S. Praveen Kumar - Risk & Quality): Analyzed risks of AI hallucination, telephony costs, and data privacy, establishing strict prompt guardrails and synthetic data boundaries.\n"
-            "• Yellow & Green Hats (P. Jaya Sai Manikanta - Value & Innovation): Quantified the university's conversion benefits (3,000+ placements highlight) and innovated the dual-voice multi-turn dialogue synthesis engine."
+            "• Yellow Hat (P. Jaya Sai Manikanta - Value Proposition): Quantified the university's conversion benefits (3,000+ placements highlight) and lead scoring intelligence.\n"
+            "• Green Hat (P. Siddardha - Creative Innovation): Innovated the dual-voice multi-turn dialogue synthesis engine with natural 400ms pauses and calibrated regional parent voices."
         ),
         30: "The Samvad AI platform architecture operates through five cohesive engineering modules:",
         31: "Autonomous Dialing & Audio Capture: The platform manages outbound calling campaigns and recorded call analysis through Next.js server route handlers.",
@@ -139,7 +142,7 @@ def update_docx():
         90: "Reviewer Feedback: Early evaluators commended the natural cadence of the Telugu voices, noting that the conversational warmth significantly reduces parental skepticism.",
         92: (
             "Samvad AI demonstrates the profound potential of sovereign Indian voice AI in educational administration and enterprise communication. "
-            "By taking a universal voice calling engine and tuning it for Aditya University's B.Tech Parent Admissions Desk, our team proved that autonomous voice agents can "
+            "By taking a universal voice calling engine and tuning it for Aditya University's B.Tech Parent Admissions Desk, our six-member team proved that autonomous voice agents can "
             "handle complex, emotionally charged family consultations with fluency, empathy, and technical rigor. "
             "The platform eliminates counselor exhaustion, guarantees immediate 24/7 responsiveness to parents in their mother tongue, and automates student lead qualification. "
             "Future milestones include direct integration with university ERP systems, automated SMS/WhatsApp broadcast triggers, and expansion into Tamil, Kannada, and Hindi admissions desks."
@@ -161,11 +164,15 @@ def update_docx():
                 print(f"Skipping P{p_idx} because it contains an image.")
                 continue
             p.text = text
-            print(f"Updated P{p_idx}")
 
-    print("Saving modified document to:", dest_path)
-    os.makedirs(os.path.dirname(dest_path), exist_ok=True)
-    doc.save(dest_path)
-    print("Document saved successfully!")
+    # Try saving to main dest_path, if locked by Word, save to alt
+    print("Saving modified document with 6 members...")
+    doc.save(dest_path_alt)
+    print("Saved:", dest_path_alt)
+    try:
+        doc.save(dest_path_main)
+        print("Saved:", dest_path_main)
+    except PermissionError:
+        print("Note: 'Samvad Ai Documentation.docx' is currently open in Microsoft Word. Saved to 'Samvad Ai Documentation (Team of 6 - Siddardha Included).docx' without error!")
 
 update_docx()

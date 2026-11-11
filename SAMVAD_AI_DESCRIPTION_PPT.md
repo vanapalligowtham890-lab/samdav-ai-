@@ -2,7 +2,7 @@
 ## Complete Presentation Blueprint for College Review & Project Evaluation
 **Project Title**: Samvad AI (సంవాద్ AI) — Autonomous Sovereign Voice Calling Platform  
 **Showcase Implementation**: Aditya University B.Tech Parent Admissions & Student Counseling Desk  
-**Team Members (5)**: Gowtham Vanapalli &bull; P. Harsha Vardhan &bull; T. Yamini Naga Lakshmi &bull; S. Praveen Kumar &bull; P. Jaya Sai Manikanta  
+**Team Members (6)**: Gowtham Vanapalli &bull; P. Harsha Vardhan &bull; T. Yamini Naga Lakshmi &bull; S. Praveen Kumar &bull; P. Jaya Sai Manikanta &bull; P. Siddardha  
 **Optimized for**: **Gamma App** (`https://gamma.app`)
 
 ---
@@ -32,7 +32,7 @@ Gamma offers two fast ways to build your presentation:
 > **Samvad AI** (సంవాద్ AI) is an autonomous, multilingual voice calling platform powered by Indian sovereign AI engines (**Gnani Prisma** for Speech-to-Text and **Gnani Timbre** for Text-to-Speech), backed by **Google Gemini** for reasoning and **SQLite** for zero-redundancy caching. It allows organizations to launch two-way phone calls that understand regional languages, speak with human cadence, and automatically extract CRM data.
 >
 > **The Showcase (Aditya University)**:  
-> To demonstrate the real-world value of Samvad AI, we fine-tuned and deployed a dedicated agent: **The Aditya University Parent Admissions Desk**. During B.Tech admissions season, this agent calls and counsels parents in natural Telugu, explains our 180-acre Surampalem campus, NAAC A++ accreditation, Industry 4.0 curriculum, and hostel safety with strict gender honorifics (*"సర్"* for fathers, *"మేడమ్"* for mothers), and automatically qualifies student leads with instant WhatsApp counseling appointment slips.
+> To demonstrate the real-world value of Samvad AI, our 6-member team fine-tuned and deployed a dedicated agent: **The Aditya University Parent Admissions Desk**. During B.Tech admissions season, this agent calls and counsels parents in natural Telugu, explains our 180-acre Surampalem campus, NAAC A++ accreditation, Industry 4.0 curriculum, and hostel safety with strict gender honorifics (*"సర్"* for fathers, *"మేడమ్"* for mothers), and automatically qualifies student leads with instant WhatsApp counseling appointment slips.
 
 ---
 
@@ -45,7 +45,13 @@ Create a professional, modern 10-slide academic project presentation on:
 "Samvad AI — Autonomous Sovereign Multilingual Voice Calling Platform & Aditya University Admissions Agent".
 
 Context:
-This is an engineering design thinking project for Aditya University. The project was built by a 5-member team: Gowtham Vanapalli (Blue Hat Lead), P. Harsha Vardhan (White Hat Data), Yamini (Red Hat Empathy), Praveen (Black Hat Risk), and Manikanta (Yellow/Green Hats Innovation).
+This is an engineering design thinking project for Aditya University. Built by a 6-member team:
+1. Gowtham Vanapalli (Blue Hat: Process, Platform Architecture & Team Lead)
+2. P. Harsha Vardhan (White Hat: Facts, Architecture & Gnani Infrastructure)
+3. T. Yamini Naga Lakshmi (Red Hat: Parent Empathy, Counseling & Gender Respect)
+4. S. Praveen Kumar (Black Hat: Risk Assessment, Guardrails & Quality Assurance)
+5. P. Jaya Sai Manikanta (Yellow Hat: Value Proposition, 3,000+ Placements & Growth)
+6. P. Siddardha (Green Hat: Creative Innovation, Dual-Voice Synthesis & Audio Demo)
 
 Aesthetic Style:
 - Professional, Clean, Academic & Tech-forward
@@ -57,7 +63,7 @@ Slide 1: Title Slide — Samvad AI: Sovereign Multilingual Voice AI Calling Plat
 Slide 2: The Core Challenge — B.Tech Admissions Rush & The Vernacular Disconnect (5000+ calls, counselor fatigue, robotic IVR failures)
 Slide 3: What is Samvad AI? — Platform Architecture vs Showcase Implementation (Universal Calling Engine fine-tuned for Aditya University)
 Slide 4: Design Thinking Process — 5 Stages (Empathize, Define, Ideate, Prototype, Test)
-Slide 5: Edward de Bono's Six Thinking Hats — 5 Team Perspectives (Blue, White, Red, Black, Yellow & Green Hats)
+Slide 5: Edward de Bono's Six Thinking Hats — 6 Team Perspectives (Blue, White, Red, Black, Yellow, and Green Hats)
 Slide 6: Indian Sovereign AI Architecture — Gnani Prisma STT, Gnani Timbre TTS, Gemini 2.5 Flash & SQLite Zero-Cost Cache
 Slide 7: Dual-Voice Conversational Breakthrough — Officer Shivani & Telugu Parents with Natural 400ms Pauses & Strict Gender Respect ("సర్" vs "మేడమ్")
 Slide 8: Admissions Dashboard & Lead Intelligence CRM — Live KPI Cards, Upcoming/Recorded Calling Lists, and 1-Click WhatsApp Counseling Slips
@@ -81,12 +87,13 @@ Slide 10: Conclusion & Future Roadmap — Democratizing Regional Voice AI, 3,000
 
 #### Project Metadata & Team:
 * **Institution**: Aditya University &bull; Dept. of Data Science (DS-8, Batch 07)
-* **Team Members (5)**:
+* **Team Members (6)**:
   * 🎩 **Gowtham Vanapalli** (26B11DS678) — Blue Hat: Platform Architect & Team Lead
   * ⚪ **P. Harsha Vardhan** (2611DS507) — White Hat: Data, Architecture & Gnani Infrastructure
   * 🔴 **T. Yamini Naga Lakshmi** (2611DS637) — Red Hat: Parent Empathy & Gender Respect
   * ⚫ **S. Praveen Kumar** (2611DS636) — Black Hat: Risk Assessment & Quality Assurance
-  * 🟡🟢 **P. Jaya Sai Manikanta** (2611DS488) — Yellow/Green Hats: Innovation & Voice Demo
+  * 🟡 **P. Jaya Sai Manikanta** (2611DS488) — Yellow Hat: Value Proposition & Placements
+  * 🟢 **P. Siddardha** (2611DS484) — Green Hat: Creative Voice Innovation & Live Demo
 
 ---
 
@@ -143,7 +150,7 @@ Slide 10: Conclusion & Future Roadmap — Democratizing Regional Voice AI, 3,000
 ---
 
 ### Slide 5: Edward de Bono's Six Thinking Hats
-# Team Roles & Multi-Perspective Analysis
+# Team Roles & Multi-Perspective Analysis (6 Members)
 
 | Hat & Member | Analytical Perspective | Contribution to the Project |
 | :--- | :--- | :--- |
@@ -151,7 +158,8 @@ Slide 10: Conclusion & Future Roadmap — Democratizing Regional Voice AI, 3,000
 | ⚪ **White Hat**<br>**P. Harsha Vardhan** | **Facts & Data** | Grounded system in hard architecture: Gnani Prisma 24kHz codemix STT, Timbre TTS, and SHA-256 SQLite cache. |
 | 🔴 **Red Hat**<br>**Yamini** | **Empathy & Emotion** | Advocated for Telugu mother-tongue comfort, parental safety reassurance, and strict gender respect (*"సర్"* vs *"మేడమ్"*). |
 | ⚫ **Black Hat**<br>**Praveen** | **Caution & Risk** | Bound AI prompts to verified university facts to prevent hallucinations, protected telephony billing, and enforced synthetic data rules. |
-| 🟡🟢 **Yellow & Green**<br>**Manikanta** | **Value & Creativity** | Quantified student conversion value (3,000+ placements highlight) and innovated the dual-voice multi-turn dialogue engine. |
+| 🟡 **Yellow Hat**<br>**Manikanta** | **Value & Optimism** | Quantified student conversion value (3,000+ placements highlight), lead scoring intelligence, and admissions growth. |
+| 🟢 **Green Hat**<br>**P. Siddardha** | **Creativity & Innovation** | Innovated the dual-voice multi-turn dialogue synthesis engine, calibrated 400ms natural pauses, and led the live audio demonstration. |
 
 ---
 
@@ -192,7 +200,7 @@ Slide 10: Conclusion & Future Roadmap — Democratizing Regional Voice AI, 3,000
 # Natural Multi-Turn Dialogue & Gender Respect
 
 ### Eliminating Robotic Monologues:
-* 🎙️ **Dual-Voice Persona Synthesis**:
+* 🎙️ **Dual-Voice Persona Synthesis (Engineered by P. Siddardha)**:
   * **Admissions Officer**: `Shivani` (Warm, professional, authoritative counselor).
   * **Telugu Fathers (Uncles)**: `Avinash` & `Prakash` (Deep, inquisitive, analytical tone).
   * **Telugu Mothers (Aunties)**: `Kalpana` & `Lavanya` (Empathetic, caring, safety-focused tone).
@@ -260,8 +268,8 @@ Slide 10: Conclusion & Future Roadmap — Democratizing Regional Voice AI, 3,000
 * **Oasis** (Crisp clean white background with emerald and navy structure) — *Excellent for high-contrast academic evaluation*
 
 ### 2. Card Layout Recommendations
-* **Slide 1**: Centered Title Card with large badge and author metadata row.
+* **Slide 1**: Centered Title Card with large badge and author metadata row (6 team members).
 * **Slide 3**: 2-Column Split Card comparing Platform (Left) vs Showcase (Right).
-* **Slide 5**: Table Card / 5-Column Grid displaying the 5 team members and their Thinking Hats.
+* **Slide 5**: Table Card / 6-Column Grid displaying the 6 team members and their Thinking Hats.
 * **Slide 6**: Flowchart / Process Diagram layout for the architecture pipeline.
 * **Slide 8**: Metric Card Grid (4 KPI counters) followed by a 2-column Call List / WhatsApp slip comparison.
